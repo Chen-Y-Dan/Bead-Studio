@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "beadstudio"
+version = "1.0.0"
+description = "BeadStudio (豆趣工坊) — bead pattern design desktop app (PySide6)"
+requires-python = ">=3.10"
+license = { text = "GPL-3.0-or-later" }
+readme = "README.md"
+dependencies = [
+    "PySide6",
+    "Pillow",
+    "numpy",
+    "colour-science",
+    "reportlab",
+    "typer",
+]
+
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: Microsoft :: Windows",
+    "Environment :: X11 Applications :: Qt",
+    "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+# TODO(W5): fill in the real repository URL after the GitHub repo is created.
+Homepage = "https://github.com/<your-user>/bead-gui"
+Repository = "https://github.com/<your-user>/bead-gui"
+"Bug Tracker" = "https://github.com/<your-user>/bead-gui/issues"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.setuptools]
+packages = ["beadstudio", "beadstudio.core"]
+
+[tool.setuptools.package-data]
+"beadstudio.core" = ["data/palettes/*.json"]

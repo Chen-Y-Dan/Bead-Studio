@@ -1,0 +1,277 @@
+{
+  "brand": "Nabbi",
+  "source": "https://github.com/maxcleme/beadcolors",
+  "license": "MIT",
+  "colors": [
+    {
+      "code": "N01",
+      "name": "Black",
+      "rgb": [
+        58,
+        61,
+        65
+      ]
+    },
+    {
+      "code": "N02",
+      "name": "Dark Brown",
+      "rgb": [
+        80,
+        68,
+        59
+      ]
+    },
+    {
+      "code": "N03",
+      "name": "Brown Medium",
+      "rgb": [
+        90,
+        62,
+        54
+      ]
+    },
+    {
+      "code": "N04",
+      "name": "Maroon",
+      "rgb": [
+        129,
+        53,
+        71
+      ]
+    },
+    {
+      "code": "N05",
+      "name": "Caramel",
+      "rgb": [
+        167,
+        98,
+        36
+      ]
+    },
+    {
+      "code": "N06",
+      "name": "Tan",
+      "rgb": [
+        173,
+        150,
+        126
+      ]
+    },
+    {
+      "code": "N07",
+      "name": "Sand",
+      "rgb": [
+        238,
+        177,
+        130
+      ]
+    },
+    {
+      "code": "N08",
+      "name": "Ash",
+      "rgb": [
+        141,
+        139,
+        127
+      ]
+    },
+    {
+      "code": "N09",
+      "name": "Hunter Green",
+      "rgb": [
+        47,
+        74,
+        57
+      ]
+    },
+    {
+      "code": "N10",
+      "name": "Light Grey",
+      "rgb": [
+        211,
+        203,
+        203
+      ]
+    },
+    {
+      "code": "N11",
+      "name": "Purple",
+      "rgb": [
+        100,
+        69,
+        145
+      ]
+    },
+    {
+      "code": "N12",
+      "name": "Ivory",
+      "rgb": [
+        226,
+        208,
+        191
+      ]
+    },
+    {
+      "code": "N13",
+      "name": "Orange",
+      "rgb": [
+        243,
+        96,
+        27
+      ]
+    },
+    {
+      "code": "N14",
+      "name": "Yellow",
+      "rgb": [
+        249,
+        202,
+        0
+      ]
+    },
+    {
+      "code": "N15",
+      "name": "White",
+      "rgb": [
+        244,
+        244,
+        243
+      ]
+    },
+    {
+      "code": "N16",
+      "name": "Green",
+      "rgb": [
+        41,
+        122,
+        59
+      ]
+    },
+    {
+      "code": "N17",
+      "name": "Bright Blue",
+      "rgb": [
+        59,
+        117,
+        203
+      ]
+    },
+    {
+      "code": "N18",
+      "name": "Light Rose",
+      "rgb": [
+        225,
+        180,
+        171
+      ]
+    },
+    {
+      "code": "N19",
+      "name": "Red",
+      "rgb": [
+        223,
+        38,
+        56
+      ]
+    },
+    {
+      "code": "N20",
+      "name": "Light Brown",
+      "rgb": [
+        181,
+        139,
+        105
+      ]
+    },
+    {
+      "code": "N21",
+      "name": "Light Yellow",
+      "rgb": [
+        245,
+        236,
+        141
+      ]
+    },
+    {
+      "code": "N22",
+      "name": "Lime",
+      "rgb": [
+        72,
+        175,
+        79
+      ]
+    },
+    {
+      "code": "N23",
+      "name": "Medium Blue",
+      "rgb": [
+        113,
+        163,
+        230
+      ]
+    },
+    {
+      "code": "N24",
+      "name": "Lavender",
+      "rgb": [
+        182,
+        160,
+        219
+      ]
+    },
+    {
+      "code": "N25",
+      "name": "Pink",
+      "rgb": [
+        238,
+        106,
+        151
+      ]
+    },
+    {
+      "code": "N26",
+      "name": "Peach",
+      "rgb": [
+        252,
+        168,
+        121
+      ]
+    },
+    {
+      "code": "N27",
+      "name": "Chocolate",
+      "rgb": [
+        135,
+        95,
+        82
+      ]
+    },
+    {
+      "code": "N28",
+      "name": "Sky",
+      "rgb": [
+        167,
+        198,
+        241
+      ]
+    },
+    {
+      "code": "N29",
+      "name": "Gold",
+      "rgb": [
+        238,
+        149,
+        39
+      ]
+    },
+    {
+      "code": "N30",
+      "name": "Kiwi",
+      "rgb": [
+        199,
+        191,
+        94
+      ]
+    }
+  ]
+}

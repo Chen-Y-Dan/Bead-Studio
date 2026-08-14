@@ -1,0 +1,232 @@
+{
+  "brand": "Hama Maxi",
+  "source": "https://github.com/maxcleme/beadcolors",
+  "license": "MIT",
+  "colors": [
+    {
+      "code": "H01",
+      "name": "White",
+      "rgb": [
+        229,
+        236,
+        241
+      ]
+    },
+    {
+      "code": "H03",
+      "name": "Yellow",
+      "rgb": [
+        233,
+        199,
+        4
+      ]
+    },
+    {
+      "code": "H05",
+      "name": "Red",
+      "rgb": [
+        180,
+        6,
+        14
+      ]
+    },
+    {
+      "code": "H07",
+      "name": "Purple",
+      "rgb": [
+        113,
+        34,
+        151
+      ]
+    },
+    {
+      "code": "H09",
+      "name": "Light Blue",
+      "rgb": [
+        2,
+        91,
+        195
+      ]
+    },
+    {
+      "code": "H10",
+      "name": "Green",
+      "rgb": [
+        2,
+        118,
+        67
+      ]
+    },
+    {
+      "code": "H17",
+      "name": "Grey",
+      "rgb": [
+        131,
+        143,
+        152
+      ]
+    },
+    {
+      "code": "H18",
+      "name": "Black",
+      "rgb": [
+        20,
+        19,
+        21
+      ]
+    },
+    {
+      "code": "H20",
+      "name": "Reddish Brown",
+      "rgb": [
+        141,
+        42,
+        15
+      ]
+    },
+    {
+      "code": "H26",
+      "name": "Matt Rose",
+      "rgb": [
+        232,
+        164,
+        152
+      ]
+    },
+    {
+      "code": "H32",
+      "name": "Neon Fuchsia",
+      "rgb": [
+        255,
+        32,
+        141
+      ]
+    },
+    {
+      "code": "H34",
+      "name": "Neon Yellow",
+      "rgb": [
+        229,
+        239,
+        19
+      ]
+    },
+    {
+      "code": "H35",
+      "name": "Neon Red",
+      "rgb": [
+        255,
+        40,
+        51
+      ]
+    },
+    {
+      "code": "H36",
+      "name": "Neon Blue",
+      "rgb": [
+        35,
+        83,
+        176
+      ]
+    },
+    {
+      "code": "H37",
+      "name": "Neon Green",
+      "rgb": [
+        6,
+        183,
+        60
+      ]
+    },
+    {
+      "code": "H38",
+      "name": "Neon Orange",
+      "rgb": [
+        253,
+        134,
+        0
+      ]
+    },
+    {
+      "code": "H43",
+      "name": "Pastel Yellow",
+      "rgb": [
+        231,
+        228,
+        90
+      ]
+    },
+    {
+      "code": "H44",
+      "name": "Pastel Red",
+      "rgb": [
+        249,
+        97,
+        96
+      ]
+    },
+    {
+      "code": "H45",
+      "name": "Pastel Purple",
+      "rgb": [
+        142,
+        105,
+        205
+      ]
+    },
+    {
+      "code": "H46",
+      "name": "Pastel Blue",
+      "rgb": [
+        81,
+        174,
+        228
+      ]
+    },
+    {
+      "code": "H47",
+      "name": "Pastel Green",
+      "rgb": [
+        128,
+        223,
+        150
+      ]
+    },
+    {
+      "code": "H48",
+      "name": "Pastel Pink",
+      "rgb": [
+        214,
+        122,
+        209
+      ]
+    },
+    {
+      "code": "H60",
+      "name": "Teddybear Brown",
+      "rgb": [
+        240,
+        152,
+        30
+      ]
+    },
+    {
+      "code": "H70",
+      "name": "Light Grey",
+      "rgb": [
+        165,
+        179,
+        192
+      ]
+    },
+    {
+      "code": "H79",
+      "name": "Apricot",
+      "rgb": [
+        248,
+        118,
+        51
+      ]
+    }
+  ]
+}

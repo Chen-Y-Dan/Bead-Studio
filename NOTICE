@@ -1,0 +1,116 @@
+BeadStudio (豆趣工坊) — Third-Party Notices / 第三方声明
+=======================================================
+
+BeadStudio (豆趣工坊) is licensed under the GNU General Public License v3.0
+(see LICENSE).  This NOTICE lists the third-party components bundled with or
+adapted into the project and their licenses, as required by those licenses.
+
+BeadStudio（豆趣工坊）以 GNU GPL v3.0 许可发布（见 LICENSE）。本 NOTICE 按照
+各上游许可证的要求，列出项目内包含或改编的第三方组件及其许可。
+
+--------------------------------------------------------------------------
+1. Engine core / 引擎核心 — bead-pattern-cli (MIT)
+--------------------------------------------------------------------------
+
+The package `beadstudio.core` (the conversion engine: image → bead grid,
+color matching, estimation, exports, CLI) is adapted from
+bead-pattern-cli (https://github.com/bead-pattern-cli) / pindou（拼豆）,
+Copyright (c) 2026 bead-pattern-cli contributors, licensed under the MIT
+License.
+
+The following files in this repository are derived from that project:
+
+    beadstudio/core/__init__.py
+    beadstudio/core/cli.py
+    beadstudio/core/convert.py
+    beadstudio/core/estimate.py
+    beadstudio/core/export.py
+    beadstudio/core/palette.py
+
+These core files retain their MIT origin; the project as a whole (GUI +
+core) is licensed under the GNU GPL v3.0.  BeadStudio is not an official
+product of, nor endorsed by, the bead-pattern-cli project.
+
+MIT License (bead-pattern-cli)
+
+    MIT License
+
+    Copyright (c) 2026 bead-pattern-cli contributors
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+--------------------------------------------------------------------------
+2. Palette data / 色板数据
+--------------------------------------------------------------------------
+
+The built-in bead palette data under `beadstudio/core/data/palettes/*.json`
+(21 brands, 3706 color codes) comes from two upstream open-source
+repositories.  Each palette JSON carries its own `source` and `license`
+fields; they are redistributed unmodified in binary/data form.
+
+内置色板数据（21 个品牌、3706 个色号）来自两个上游开源仓库，随包分发、
+本地离线使用。每个色板 JSON 均带 `source` 与 `license` 字段。
+
+a) beadcolors — Copyright (c) maxcleme, MIT License
+   https://github.com/maxcleme/beadcolors
+
+   Brands: perler, perler_mini, perler_caps, hama, hama_mini, hama_maxi,
+           artkal_a, artkal_c, artkal_m, artkal_r, artkal_s, mard,
+           nabbi, diamond_dotz, yant
+
+   MIT License (see section 1 above for the full MIT text — same license).
+
+b) pindou-color-data — Copyright (c) HansBug, Apache License 2.0
+   https://github.com/HansBug/pindou-color-data
+
+   Brands: coco, mard_291, manman, mixiaowo, panpan, youken
+
+   Apache License 2.0: https://www.apache.org/licenses/LICENSE-2.0
+   A copy of the Apache-2.0 license text may also be obtained from:
+   https://www.apache.org/licenses/
+
+--------------------------------------------------------------------------
+3. GUI framework / 界面框架 — Qt / PySide6
+--------------------------------------------------------------------------
+
+The GUI uses Qt for Python (PySide6) from the Qt Company
+(https://www.qt.io / https://doc.qt.io/qtforpython/).  PySide6 is
+available under the GNU Lesser General Public License v3 (LGPL-3.0) or
+the GNU General Public License v3 (GPL-3.0), at your option, with an
+additional commercial licensing option from The Qt Company.
+
+PySide6 采用 GNU LGPL v3 与 GNU GPL v3 双许可（另可向 Qt Company 获取
+商业许可）。本项目按 GPL-3.0 使用之。
+
+    LGPL-3.0: https://www.gnu.org/licenses/lgpl-3.0.html
+    GPL-3.0:  https://www.gnu.org/licenses/gpl-3.0.html
+
+--------------------------------------------------------------------------
+4. Other Python dependencies / 其他 Python 依赖
+--------------------------------------------------------------------------
+
+Installed at runtime via PyPI (not bundled in the repository):
+
+    Pillow        — HPND / MIT (https://pillow.readthedocs.io)
+    numpy         — BSD-3-Clause (https://numpy.org)
+    colour-science— BSD-3-Clause (https://www.colour-science.org)
+    reportlab     — BSD-3-Clause (https://www.reportlab.com)
+    typer         — MIT (https://typer.tiangolo.com)
+
+Optional (background removal): rembg (MIT) and onnxruntime (MIT).

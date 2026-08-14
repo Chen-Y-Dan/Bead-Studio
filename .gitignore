@@ -1,0 +1,38 @@
+# Copied from E:\bead-pattern-cli\.gitignore (W1)
+vendor/
+.venv*/
+output/
+__pycache__/
+*.pyc
+.pytest_cache/
+dist/
+build/
+*.egg-info/
+
+# PyInstaller spec files (generated; dist\BeadStudio.exe ~89MB must never be committed)
+*.spec
+
+# Local agent workspace (may contain personal photos under .omo/evidence/)
+.omo/
+
+# Standard Python ignores
+venv/
+env/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+.python-version
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

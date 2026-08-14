@@ -1,0 +1,1078 @@
+{
+  "brand": "Yant",
+  "source": "https://github.com/maxcleme/beadcolors",
+  "license": "MIT",
+  "colors": [
+    {
+      "code": "Y002",
+      "name": "white",
+      "rgb": [
+        255,
+        255,
+        255
+      ]
+    },
+    {
+      "code": "Y003",
+      "name": "shell",
+      "rgb": [
+        224,
+        212,
+        216
+      ]
+    },
+    {
+      "code": "Y004",
+      "name": "ash",
+      "rgb": [
+        221,
+        219,
+        206
+      ]
+    },
+    {
+      "code": "Y005",
+      "name": "dove",
+      "rgb": [
+        206,
+        200,
+        203
+      ]
+    },
+    {
+      "code": "Y006",
+      "name": "fog",
+      "rgb": [
+        214,
+        212,
+        215
+      ]
+    },
+    {
+      "code": "Y007",
+      "name": "cameo",
+      "rgb": [
+        181,
+        180,
+        185
+      ]
+    },
+    {
+      "code": "Y008",
+      "name": "gray",
+      "rgb": [
+        140,
+        138,
+        141
+      ]
+    },
+    {
+      "code": "Y009",
+      "name": "smoke",
+      "rgb": [
+        113,
+        110,
+        115
+      ]
+    },
+    {
+      "code": "Y010",
+      "name": "iron",
+      "rgb": [
+        76,
+        76,
+        76
+      ]
+    },
+    {
+      "code": "Y011",
+      "name": "black",
+      "rgb": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "code": "Y012",
+      "name": "skin",
+      "rgb": [
+        239,
+        216,
+        198
+      ]
+    },
+    {
+      "code": "Y013",
+      "name": "shrimp",
+      "rgb": [
+        239,
+        192,
+        150
+      ]
+    },
+    {
+      "code": "Y014",
+      "name": "muscle",
+      "rgb": [
+        224,
+        185,
+        152
+      ]
+    },
+    {
+      "code": "Y015",
+      "name": "cedar",
+      "rgb": [
+        189,
+        156,
+        103
+      ]
+    },
+    {
+      "code": "Y016",
+      "name": "linen",
+      "rgb": [
+        210,
+        193,
+        150
+      ]
+    },
+    {
+      "code": "Y017",
+      "name": "corduroy",
+      "rgb": [
+        197,
+        162,
+        124
+      ]
+    },
+    {
+      "code": "Y018",
+      "name": "bamboo",
+      "rgb": [
+        218,
+        180,
+        118
+      ]
+    },
+    {
+      "code": "Y019",
+      "name": "caramel",
+      "rgb": [
+        196,
+        145,
+        62
+      ]
+    },
+    {
+      "code": "Y020",
+      "name": "annatto",
+      "rgb": [
+        203,
+        147,
+        96
+      ]
+    },
+    {
+      "code": "Y021",
+      "name": "soil",
+      "rgb": [
+        215,
+        153,
+        106
+      ]
+    },
+    {
+      "code": "Y022",
+      "name": "brich",
+      "rgb": [
+        155,
+        107,
+        69
+      ]
+    },
+    {
+      "code": "Y023",
+      "name": "tan",
+      "rgb": [
+        141,
+        92,
+        62
+      ]
+    },
+    {
+      "code": "Y024",
+      "name": "oak",
+      "rgb": [
+        134,
+        106,
+        85
+      ]
+    },
+    {
+      "code": "Y025",
+      "name": "chocolate",
+      "rgb": [
+        93,
+        60,
+        55
+      ]
+    },
+    {
+      "code": "Y026",
+      "name": "shy",
+      "rgb": [
+        248,
+        149,
+        107
+      ]
+    },
+    {
+      "code": "Y027",
+      "name": "coralline",
+      "rgb": [
+        213,
+        81,
+        77
+      ]
+    },
+    {
+      "code": "Y028",
+      "name": "ruby",
+      "rgb": [
+        219,
+        79,
+        62
+      ]
+    },
+    {
+      "code": "Y029",
+      "name": "sunset",
+      "rgb": [
+        207,
+        62,
+        69
+      ]
+    },
+    {
+      "code": "Y030",
+      "name": "vermillion",
+      "rgb": [
+        157,
+        34,
+        52
+      ]
+    },
+    {
+      "code": "Y031",
+      "name": "crimson",
+      "rgb": [
+        157,
+        34,
+        52
+      ]
+    },
+    {
+      "code": "Y032",
+      "name": "rose",
+      "rgb": [
+        214,
+        104,
+        167
+      ]
+    },
+    {
+      "code": "Y033",
+      "name": "taffy",
+      "rgb": [
+        104,
+        57,
+        63
+      ]
+    },
+    {
+      "code": "Y034",
+      "name": "chestnut",
+      "rgb": [
+        125,
+        71,
+        35
+      ]
+    },
+    {
+      "code": "Y035",
+      "name": "ochre",
+      "rgb": [
+        147,
+        74,
+        57
+      ]
+    },
+    {
+      "code": "Y036",
+      "name": "brick",
+      "rgb": [
+        106,
+        26,
+        53
+      ]
+    },
+    {
+      "code": "Y037",
+      "name": "pork",
+      "rgb": [
+        244,
+        226,
+        214
+      ]
+    },
+    {
+      "code": "Y038",
+      "name": "baby",
+      "rgb": [
+        245,
+        220,
+        216
+      ]
+    },
+    {
+      "code": "Y039",
+      "name": "cheek",
+      "rgb": [
+        241,
+        216,
+        222
+      ]
+    },
+    {
+      "code": "Y040",
+      "name": "sakura",
+      "rgb": [
+        238,
+        198,
+        222
+      ]
+    },
+    {
+      "code": "Y041",
+      "name": "pink",
+      "rgb": [
+        245,
+        163,
+        209
+      ]
+    },
+    {
+      "code": "Y042",
+      "name": "azalea",
+      "rgb": [
+        219,
+        119,
+        207
+      ]
+    },
+    {
+      "code": "Y043",
+      "name": "blusher",
+      "rgb": [
+        228,
+        160,
+        183
+      ]
+    },
+    {
+      "code": "Y044",
+      "name": "wintersweet",
+      "rgb": [
+        210,
+        118,
+        169
+      ]
+    },
+    {
+      "code": "Y045",
+      "name": "bleaberry",
+      "rgb": [
+        193,
+        56,
+        138
+      ]
+    },
+    {
+      "code": "Y046",
+      "name": "magenta",
+      "rgb": [
+        220,
+        74,
+        119
+      ]
+    },
+    {
+      "code": "Y047",
+      "name": "jam",
+      "rgb": [
+        154,
+        36,
+        97
+      ]
+    },
+    {
+      "code": "Y048",
+      "name": "camelia",
+      "rgb": [
+        162,
+        0,
+        103
+      ]
+    },
+    {
+      "code": "Y049",
+      "name": "bacon",
+      "rgb": [
+        201,
+        119,
+        131
+      ]
+    },
+    {
+      "code": "Y050",
+      "name": "hyacinth",
+      "rgb": [
+        212,
+        213,
+        231
+      ]
+    },
+    {
+      "code": "Y051",
+      "name": "magnolia",
+      "rgb": [
+        190,
+        194,
+        232
+      ]
+    },
+    {
+      "code": "Y052",
+      "name": "wisteria",
+      "rgb": [
+        189,
+        198,
+        237
+      ]
+    },
+    {
+      "code": "Y053",
+      "name": "cobalt",
+      "rgb": [
+        165,
+        175,
+        234
+      ]
+    },
+    {
+      "code": "Y054",
+      "name": "azure",
+      "rgb": [
+        126,
+        132,
+        190
+      ]
+    },
+    {
+      "code": "Y055",
+      "name": "lilac",
+      "rgb": [
+        217,
+        211,
+        239
+      ]
+    },
+    {
+      "code": "Y056",
+      "name": "amethyst",
+      "rgb": [
+        194,
+        187,
+        228
+      ]
+    },
+    {
+      "code": "Y057",
+      "name": "hydrangea",
+      "rgb": [
+        200,
+        156,
+        205
+      ]
+    },
+    {
+      "code": "Y058",
+      "name": "briar",
+      "rgb": [
+        166,
+        92,
+        191
+      ]
+    },
+    {
+      "code": "Y059",
+      "name": "tuberose",
+      "rgb": [
+        145,
+        31,
+        144
+      ]
+    },
+    {
+      "code": "Y060",
+      "name": "wine",
+      "rgb": [
+        108,
+        41,
+        136
+      ]
+    },
+    {
+      "code": "Y061",
+      "name": "rosemary",
+      "rgb": [
+        158,
+        109,
+        198
+      ]
+    },
+    {
+      "code": "Y062",
+      "name": "lavender",
+      "rgb": [
+        144,
+        122,
+        187
+      ]
+    },
+    {
+      "code": "Y063",
+      "name": "castle",
+      "rgb": [
+        93,
+        63,
+        135
+      ]
+    },
+    {
+      "code": "Y064",
+      "name": "myrtille",
+      "rgb": [
+        69,
+        58,
+        134
+      ]
+    },
+    {
+      "code": "Y065",
+      "name": "modena",
+      "rgb": [
+        61,
+        46,
+        85
+      ]
+    },
+    {
+      "code": "Y066",
+      "name": "jade",
+      "rgb": [
+        217,
+        230,
+        204
+      ]
+    },
+    {
+      "code": "Y067",
+      "name": "powderblue",
+      "rgb": [
+        191,
+        225,
+        227
+      ]
+    },
+    {
+      "code": "Y068",
+      "name": "elsa",
+      "rgb": [
+        196,
+        223,
+        232
+      ]
+    },
+    {
+      "code": "Y069",
+      "name": "sky",
+      "rgb": [
+        164,
+        216,
+        238
+      ]
+    },
+    {
+      "code": "Y070",
+      "name": "seacoast",
+      "rgb": [
+        103,
+        173,
+        207
+      ]
+    },
+    {
+      "code": "Y071",
+      "name": "seacoast",
+      "rgb": [
+        96,
+        167,
+        173
+      ]
+    },
+    {
+      "code": "Y072",
+      "name": "agate",
+      "rgb": [
+        102,
+        181,
+        198
+      ]
+    },
+    {
+      "code": "Y073",
+      "name": "turkey",
+      "rgb": [
+        140,
+        179,
+        220
+      ]
+    },
+    {
+      "code": "Y074",
+      "name": "danube",
+      "rgb": [
+        87,
+        125,
+        190
+      ]
+    },
+    {
+      "code": "Y075",
+      "name": "homeland",
+      "rgb": [
+        65,
+        115,
+        188
+      ]
+    },
+    {
+      "code": "Y076",
+      "name": "silence",
+      "rgb": [
+        74,
+        95,
+        188
+      ]
+    },
+    {
+      "code": "Y077",
+      "name": "rambo",
+      "rgb": [
+        61,
+        84,
+        160
+      ]
+    },
+    {
+      "code": "Y078",
+      "name": "montana",
+      "rgb": [
+        49,
+        65,
+        116
+      ]
+    },
+    {
+      "code": "Y079",
+      "name": "prussian",
+      "rgb": [
+        61,
+        71,
+        98
+      ]
+    },
+    {
+      "code": "Y080",
+      "name": "shallot",
+      "rgb": [
+        221,
+        229,
+        180
+      ]
+    },
+    {
+      "code": "Y081",
+      "name": "burgeon",
+      "rgb": [
+        218,
+        218,
+        60
+      ]
+    },
+    {
+      "code": "Y082",
+      "name": "green",
+      "rgb": [
+        205,
+        229,
+        71
+      ]
+    },
+    {
+      "code": "Y083",
+      "name": "lime",
+      "rgb": [
+        167,
+        212,
+        70
+      ]
+    },
+    {
+      "code": "Y084",
+      "name": "chloe",
+      "rgb": [
+        165,
+        211,
+        139
+      ]
+    },
+    {
+      "code": "Y085",
+      "name": "scallion",
+      "rgb": [
+        143,
+        211,
+        90
+      ]
+    },
+    {
+      "code": "Y086",
+      "name": "mint",
+      "rgb": [
+        120,
+        165,
+        74
+      ]
+    },
+    {
+      "code": "Y087",
+      "name": "turquoise",
+      "rgb": [
+        135,
+        204,
+        157
+      ]
+    },
+    {
+      "code": "Y088",
+      "name": "tiffay",
+      "rgb": [
+        184,
+        219,
+        199
+      ]
+    },
+    {
+      "code": "Y089",
+      "name": "jadeite",
+      "rgb": [
+        95,
+        174,
+        145
+      ]
+    },
+    {
+      "code": "Y090",
+      "name": "starbucks",
+      "rgb": [
+        60,
+        110,
+        72
+      ]
+    },
+    {
+      "code": "Y091",
+      "name": "tree",
+      "rgb": [
+        51,
+        121,
+        59
+      ]
+    },
+    {
+      "code": "Y092",
+      "name": "forest",
+      "rgb": [
+        58,
+        100,
+        54
+      ]
+    },
+    {
+      "code": "Y093",
+      "name": "jasper",
+      "rgb": [
+        36,
+        70,
+        54
+      ]
+    },
+    {
+      "code": "Y094",
+      "name": "barrack",
+      "rgb": [
+        114,
+        131,
+        63
+      ]
+    },
+    {
+      "code": "Y095",
+      "name": "pudding",
+      "rgb": [
+        239,
+        231,
+        169
+      ]
+    },
+    {
+      "code": "Y096",
+      "name": "greamy",
+      "rgb": [
+        226,
+        226,
+        172
+      ]
+    },
+    {
+      "code": "Y097",
+      "name": "lemon",
+      "rgb": [
+        245,
+        232,
+        127
+      ]
+    },
+    {
+      "code": "Y098",
+      "name": "yellow",
+      "rgb": [
+        241,
+        217,
+        55
+      ]
+    },
+    {
+      "code": "Y099",
+      "name": "yolk",
+      "rgb": [
+        241,
+        197,
+        48
+      ]
+    },
+    {
+      "code": "Y100",
+      "name": "ginger",
+      "rgb": [
+        218,
+        191,
+        60
+      ]
+    },
+    {
+      "code": "Y101",
+      "name": "mousse",
+      "rgb": [
+        246,
+        217,
+        147
+      ]
+    },
+    {
+      "code": "Y102",
+      "name": "mango",
+      "rgb": [
+        231,
+        181,
+        58
+      ]
+    },
+    {
+      "code": "Y103",
+      "name": "wheat",
+      "rgb": [
+        255,
+        188,
+        71
+      ]
+    },
+    {
+      "code": "Y104",
+      "name": "salmon",
+      "rgb": [
+        235,
+        179,
+        142
+      ]
+    },
+    {
+      "code": "Y105",
+      "name": "orange",
+      "rgb": [
+        223,
+        146,
+        58
+      ]
+    },
+    {
+      "code": "Y106",
+      "name": "tangerine",
+      "rgb": [
+        249,
+        152,
+        70
+      ]
+    },
+    {
+      "code": "Y107",
+      "name": "Sun-god",
+      "rgb": [
+        221,
+        120,
+        28
+      ]
+    },
+    {
+      "code": "Y108",
+      "name": "azure",
+      "rgb": [
+        224,
+        209,
+        186
+      ]
+    },
+    {
+      "code": "Y109",
+      "name": "coffee",
+      "rgb": [
+        94,
+        80,
+        79
+      ]
+    },
+    {
+      "code": "Y110",
+      "name": "cerise",
+      "rgb": [
+        223,
+        71,
+        92
+      ]
+    },
+    {
+      "code": "Y111",
+      "name": "meat",
+      "rgb": [
+        244,
+        217,
+        196
+      ]
+    },
+    {
+      "code": "Y112",
+      "name": "peach",
+      "rgb": [
+        233,
+        204,
+        200
+      ]
+    },
+    {
+      "code": "Y113",
+      "name": "chauche",
+      "rgb": [
+        215,
+        232,
+        226
+      ]
+    },
+    {
+      "code": "Y114",
+      "name": "cloud",
+      "rgb": [
+        198,
+        211,
+        230
+      ]
+    },
+    {
+      "code": "Y115",
+      "name": "maldives",
+      "rgb": [
+        102,
+        178,
+        174
+      ]
+    },
+    {
+      "code": "Y116",
+      "name": "bud",
+      "rgb": [
+        204,
+        225,
+        158
+      ]
+    },
+    {
+      "code": "Y117",
+      "name": "matcha",
+      "rgb": [
+        158,
+        174,
+        42
+      ]
+    },
+    {
+      "code": "Y118",
+      "name": "ivory",
+      "rgb": [
+        234,
+        227,
+        211
+      ]
+    },
+    {
+      "code": "Y119",
+      "name": "milk",
+      "rgb": [
+        234,
+        219,
+        196
+      ]
+    },
+    {
+      "code": "Y120",
+      "name": "persimmon",
+      "rgb": [
+        242,
+        106,
+        52
+      ]
+    }
+  ]
+}
