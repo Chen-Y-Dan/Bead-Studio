@@ -42,12 +42,19 @@ $PyInstallerArgs = @(
     '--add-data', 'assets;assets'
     # conda-python DLLs that PyInstaller's dependency resolver misses:
     # _ctypes.pyd needs ffi.dll, _ssl.pyd needs libssl-3-x64.dll,
-    # _bz2.pyd needs libbz2.dll, _sqlite3.pyd needs sqlite3.dll. Without
-    # them the frozen app dies during Python init (pyimod03_ctypes).
+    # _bz2.pyd needs libbz2.dll, _sqlite3.pyd needs sqlite3.dll,
+    # _pyexpat.pyd needs libexpat.dll. Without them the frozen app dies
+    # during Python init (e.g. "DLL load failed while importing pyexpat").
     '--add-binary', 'D:\Spyder\envs\beadGUI\Library\bin\ffi.dll;.'
+    '--add-binary', 'D:\Spyder\envs\beadGUI\Library\bin\ffi-7.dll;.'
+    '--add-binary', 'D:\Spyder\envs\beadGUI\Library\bin\ffi-8.dll;.'
     '--add-binary', 'D:\Spyder\envs\beadGUI\Library\bin\libssl-3-x64.dll;.'
+    '--add-binary', 'D:\Spyder\envs\beadGUI\Library\bin\libcrypto-3-x64.dll;.'
     '--add-binary', 'D:\Spyder\envs\beadGUI\Library\bin\libbz2.dll;.'
+    '--add-binary', 'D:\Spyder\envs\beadGUI\Library\bin\libexpat.dll;.'
+    '--add-binary', 'D:\Spyder\envs\beadGUI\Library\bin\liblzma.dll;.'
     '--add-binary', 'D:\Spyder\envs\beadGUI\Library\bin\sqlite3.dll;.'
+    '--add-binary', 'D:\Spyder\envs\beadGUI\Library\bin\zlib.dll;.'
     'beadstudio\__main__.py'
 )
 
