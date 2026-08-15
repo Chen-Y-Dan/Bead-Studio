@@ -55,6 +55,7 @@ LANG: dict[str, Tuple[str, str]] = {
     "show_codes": ("Show bead codes", "显示色号"),
     "export_format": ("Export", "导出格式"),
     "export_pdf": ("PDF pattern", "导出 PDF"),
+    "export_png": ("PNG pattern", "导出 PNG"),
     "export_csv": ("Shopping list CSV", "购物清单 CSV"),
     # buttons
     "choose_image": ("Choose image…", "选择图片"),
@@ -70,6 +71,10 @@ LANG: dict[str, Tuple[str, str]] = {
     "drop_hint": ("Drop an image here or press Ctrl+V",
                   "拖入图片或按 Ctrl+V 粘贴"),
     "drop_accept": ("Release to load image", "松开以载入图片"),
+    "image_input_hint": (
+        "Tip: drag an image here or press Ctrl+V to paste",
+        "提示：可拖入图片，或按 Ctrl+V 粘贴图片",
+    ),
     "no_clipboard_image": ("No image found in clipboard", "剪贴板中没有图片"),
     # preview
     "cell_size": ("Cell size", "格子大小"),

@@ -86,6 +86,13 @@ class SettingsPanel(QWidget):
         image_row.addWidget(self.image_label, 1)
         file_layout.addLayout(image_row)
 
+        # quick-input hint: drag an image onto the window or press Ctrl+V
+        # (reuses the subtle #hintLabel secondary-text style from theme QSS)
+        self.input_hint = QLabel(tr("image_input_hint", self._lang), file_box)
+        self.input_hint.setObjectName("hintLabel")  # styled via theme QSS
+        self.input_hint.setWordWrap(True)
+        file_layout.addWidget(self.input_hint)
+
         # output directory (button + path label)
         output_row = QHBoxLayout()
         self._output_dir_label = QLabel(tr("output_dir", self._lang), file_box)
@@ -200,8 +207,10 @@ class SettingsPanel(QWidget):
         self._export_label = QLabel(tr("export_format", self._lang), param_box)
         export_row.addWidget(self._export_label)
         self.export_pdf_check = QCheckBox(tr("export_pdf", self._lang), param_box)
+        self.export_png_check = QCheckBox(tr("export_png", self._lang), param_box)
         self.export_csv_check = QCheckBox(tr("export_csv", self._lang), param_box)
         export_row.addWidget(self.export_pdf_check)
+        export_row.addWidget(self.export_png_check)
         export_row.addWidget(self.export_csv_check)
         export_row.addStretch(1)
         param_layout.addLayout(export_row)
@@ -233,6 +242,7 @@ class SettingsPanel(QWidget):
         self.dither_check.toggled.connect(self._emit_params)
         self.bg_remove_check.toggled.connect(self._on_bg_remove_toggled)
         self.export_pdf_check.toggled.connect(self._emit_params)
+        self.export_png_check.toggled.connect(self._emit_params)
         self.export_csv_check.toggled.connect(self._emit_params)
 
         # Initial brand-dependent visibility (keeps combo order authoritative
@@ -314,6 +324,7 @@ class SettingsPanel(QWidget):
         self.choose_button.setText(tr("choose_image", lang))
         # Filename / path are value text, not translations.
         self._apply_image_label()
+        self.input_hint.setText(tr("image_input_hint", lang))
         self._output_dir_label.setText(tr("output_dir", lang))
         self.output_dir_button.setText(tr("choose_output_dir", lang))
         # self.output_dir_label shows the actual path — value text, untouched.
@@ -348,6 +359,7 @@ class SettingsPanel(QWidget):
         # export format
         self._export_label.setText(tr("export_format", lang))
         self.export_pdf_check.setText(tr("export_pdf", lang))
+        self.export_png_check.setText(tr("export_png", lang))
         self.export_csv_check.setText(tr("export_csv", lang))
 
         # actions
@@ -393,6 +405,7 @@ class SettingsPanel(QWidget):
             "dither": self.dither_check.isChecked(),
             "bg_remove": self.bg_remove_check.isChecked(),
             "export_pdf": self.export_pdf_check.isChecked(),
+            "export_png": self.export_png_check.isChecked(),
             "export_csv": self.export_csv_check.isChecked(),
             "output_dir": self.output_dir(),
         }

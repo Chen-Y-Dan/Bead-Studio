@@ -100,7 +100,7 @@ def test_drag_hint_restored_on_leave(qapp):
     window.close()
 
 
-def test_drop_sets_path_and_auto_converts(qapp, tmp_path):
+def test_drop_loads_image_without_converting(qapp, tmp_path):
     png = tmp_path / "drop.png"
     image_path = _make_red_png(png)
 
@@ -114,10 +114,15 @@ def test_drop_sets_path_and_auto_converts(qapp, tmp_path):
 
     assert event.isAccepted()
     assert Path(window.settings.image_path()) == Path(image_path)
-    # a deliberate drop auto-converts (like Generate Preview), matching the
-    # quick-input intent — and the hint is restored after the drop
-    assert window._last_result is not None
+    # Dropping only LOADS the image — no auto-convert; the pattern appears
+    # only after the user presses Generate Preview.
+    assert window._last_result is None
+    assert "转换完成" not in window.status_label.text()
     assert window.settings.image_label.text() == Path(image_path).name
+
+    # Generate Preview then converts the dropped image.
+    window._on_generate_preview_clicked()
+    assert window._last_result is not None
     assert "转换完成" in window.status_label.text()
     window.close()
 
@@ -180,8 +185,9 @@ def test_paste_image_sets_path(qapp):
     assert path is not None
     assert Path(path).exists()
     assert Path(path).name == "beadstudio_paste.png"
-    # clipboard QImage → temp PNG → auto-convert ran
-    assert window._last_result is not None
+    # clipboard QImage → temp PNG → loaded only, no auto-convert
+    assert window._last_result is None
+    assert "转换完成" not in window.status_label.text()
     window.close()
 
 
@@ -200,7 +206,8 @@ def test_paste_file_url_sets_path(qapp, tmp_path):
 
     # copied image FILE → used directly, no temp file involved
     assert Path(window.settings.image_path()) == Path(image_path)
-    assert window._last_result is not None
+    # pasting only loads — no auto-convert
+    assert window._last_result is None
     window.close()
 
 

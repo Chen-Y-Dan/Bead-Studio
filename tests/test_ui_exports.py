@@ -97,6 +97,32 @@ def test_export_flow_respects_checkboxes(tmp_path, qapp):
     window.close()
 
 
+def test_export_flow_png_single(tmp_path, qapp):
+    """Single-image PNG export: export_png checked → <stem>_pattern.png."""
+    png = tmp_path / "blue.png"
+    image_path = _make_image(png, color=(20, 60, 220))
+    out_dir = tmp_path / "out"
+
+    window = MainWindow()
+    window.settings.set_image_path(image_path)
+    window.settings.width_spin.setValue(16)
+    window.settings.set_output_dir(str(out_dir))
+    window.settings.export_png_check.setChecked(True)
+
+    window._convert()
+
+    assert window._last_result is not None
+    pattern = out_dir / "blue_pattern.png"
+    assert pattern.exists(), "PNG export missing (CLI name: <stem>_pattern.png)"
+    assert pattern.stat().st_size > 0
+    # PDF/CSV unchecked → only the PNG is written
+    assert not (out_dir / "blue_pattern.pdf").exists()
+    assert not (out_dir / "blue_shopping.csv").exists()
+    # status bar reports the saved path
+    assert "blue_pattern.png" in window.status_label.text()
+    window.close()
+
+
 def test_export_failure_does_not_crash(tmp_path, qapp):
     """An uncreatable output dir surfaces a status-bar error, no exception."""
     png = tmp_path / "img.png"

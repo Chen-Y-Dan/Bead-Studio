@@ -115,7 +115,7 @@ class MainWindow(QMainWindow):
 
         # -- left: settings panel (fixed width) ------------------------------
         self.settings = SettingsPanel(self, lang=self._lang)
-        self.settings.setFixedWidth(320)
+        self.settings.setFixedWidth(340)
 
         # -- right: view options + scrollable preview ------------------------
         self.preview = PreviewWidget(self, lang=self._lang)
@@ -211,23 +211,23 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------- quick image input
 
     def _load_input_image(self, path: str) -> None:
-        """Set the input image from a quick-input source and convert it.
+        """Set the input image from a quick-input source (drag / paste).
 
-        A deliberate drop/paste is an explicit request to see that image's
-        pattern, so it sets the path AND runs the conversion immediately —
-        the same behavior as pressing Generate Preview. Parameter changes
-        still never auto-convert (the no-live-preview rule is untouched).
+        Loads the image into the picker only — the conversion is never run
+        automatically. Dropping an image or pressing Ctrl+V just selects it,
+        exactly like the Choose image… button; the user then presses Generate
+        Preview to see the pattern. Parameter changes still never auto-convert
+        (the no-live-preview rule is untouched).
         """
         self.settings.set_image_path(path)
-        self._convert()
 
     def _on_paste(self) -> None:
         """Ctrl+V: load the clipboard image (QImage or a copied image file).
 
         Priority: a clipboard QImage is saved to a temp PNG (overwritten on
         each paste), then a local image-file URL is used directly. Anything
-        else surfaces the bilingual no-image status message. Deliberate input
-        actions auto-convert (see :meth:`_load_input_image`).
+        else surfaces the bilingual no-image status message. Pasting only
+        loads the image — it never auto-converts (see :meth:`_load_input_image`).
         """
         clipboard = QApplication.clipboard()
         mime = clipboard.mimeData()
@@ -269,7 +269,7 @@ class MainWindow(QMainWindow):
         event.accept()
 
     def dropEvent(self, event: QDropEvent) -> None:
-        """Drop the first image file URL → set + auto-convert."""
+        """Drop the first image file URL → load it into the picker (no convert)."""
         path = _image_drop_path(event.mimeData())
         self.settings.set_image_hint_active(False)
         if path:
@@ -340,11 +340,21 @@ class MainWindow(QMainWindow):
         ]
         if bg_remove_skipped:
             parts.append(tr("bg_remove_skipped", self._lang))
-        if params.get("export_pdf") or params.get("export_csv"):
+        if (
+            params.get("export_pdf")
+            or params.get("export_csv")
+            or params.get("export_png")
+        ):
             stem = Path(image_path).stem
             out_dir = Path(params.get("output_dir") or self.settings.output_dir())
             try:
-                for saved, err in self._export_result(result, params, stem, out_dir):
+                for saved, err in self._export_result(
+                    result,
+                    params,
+                    stem,
+                    out_dir,
+                    with_png=params.get("export_png", False),
+                ):
                     if err is not None:
                         parts.append(tr("export_failed", self._lang).format(msg=err))
                     else:
