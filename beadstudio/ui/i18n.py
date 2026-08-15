@@ -66,6 +66,11 @@ LANG: dict[str, Tuple[str, str]] = {
     "output_dir_auto": ("Auto (image folder)", "自动（图片所在目录）"),
     # image path label
     "image_path_default": ("No image selected", "未选择图片"),
+    # drag & drop / paste quick-input hints
+    "drop_hint": ("Drop an image here or press Ctrl+V",
+                  "拖入图片或按 Ctrl+V 粘贴"),
+    "drop_accept": ("Release to load image", "松开以载入图片"),
+    "no_clipboard_image": ("No image found in clipboard", "剪贴板中没有图片"),
     # preview
     "cell_size": ("Cell size", "格子大小"),
     "preview_empty": ("No pattern yet — choose an image and press Generate Preview",

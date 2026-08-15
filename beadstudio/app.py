@@ -12,10 +12,19 @@ from __future__ import annotations
 
 import logging
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any, Optional
 
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import QMimeData, Qt
+from PySide6.QtGui import (
+    QDragEnterEvent,
+    QDragLeaveEvent,
+    QDropEvent,
+    QIcon,
+    QKeySequence,
+    QShortcut,
+)
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -45,6 +54,24 @@ _ICON_PATH = _ASSETS_DIR / "app_icon_512.png"
 
 #: Image extensions accepted in batch-folder mode (engine's supported list).
 _SUPPORTED_EXTS = {".png", ".jpg", ".jpeg", ".bmp", ".webp", ".gif"}
+
+
+def _image_drop_path(mime: QMimeData) -> Optional[str]:
+    """First local image-file URL in *mime* (or None).
+
+    Shared by the drag & drop handlers and the paste handler: both check
+    file URLs against the engine's supported extensions so a dropped/pasted
+    .txt (or a folder) is cleanly rejected instead of producing a convert
+    error later.
+    """
+    if not mime.hasUrls():
+        return None
+    for url in mime.urls():
+        if url.isLocalFile():
+            path = url.toLocalFile()
+            if Path(path).suffix.lower() in _SUPPORTED_EXTS:
+                return path
+    return None
 
 
 def _preprocess_bg_remove(image_path: str) -> Optional[str]:
@@ -143,6 +170,14 @@ class MainWindow(QMainWindow):
         self.show_codes_check.toggled.connect(self.preview.set_show_codes)
         self.lang_combo.currentIndexChanged.connect(self._on_language_changed)
 
+        # -- quick image input: drag & drop + Ctrl+V paste ----------------------
+        # The whole window accepts image drops (children without their own
+        # drop handling propagate the events up to the top-level widget), and
+        # a paste shortcut covers the clipboard path.
+        self.setAcceptDrops(True)
+        paste_shortcut = QShortcut(QKeySequence.StandardKey.Paste, self)
+        paste_shortcut.activated.connect(self._on_paste)
+
     # ------------------------------------------------------------------ API
 
     def _on_generate_preview_clicked(self) -> None:
@@ -172,6 +207,77 @@ class MainWindow(QMainWindow):
         if self.status_label.text() == old_ready:
             self.status_label.setText(tr("status_ready", lang))
         self.setWindowTitle(tr("window_title", lang))
+
+    # ------------------------------------------------- quick image input
+
+    def _load_input_image(self, path: str) -> None:
+        """Set the input image from a quick-input source and convert it.
+
+        A deliberate drop/paste is an explicit request to see that image's
+        pattern, so it sets the path AND runs the conversion immediately —
+        the same behavior as pressing Generate Preview. Parameter changes
+        still never auto-convert (the no-live-preview rule is untouched).
+        """
+        self.settings.set_image_path(path)
+        self._convert()
+
+    def _on_paste(self) -> None:
+        """Ctrl+V: load the clipboard image (QImage or a copied image file).
+
+        Priority: a clipboard QImage is saved to a temp PNG (overwritten on
+        each paste), then a local image-file URL is used directly. Anything
+        else surfaces the bilingual no-image status message. Deliberate input
+        actions auto-convert (see :meth:`_load_input_image`).
+        """
+        clipboard = QApplication.clipboard()
+        mime = clipboard.mimeData()
+        if mime is None:
+            # Empty clipboard (e.g. after clear()) — no mime data at all.
+            self._set_status(tr("no_clipboard_image", self._lang))
+            return
+        if mime.hasImage():
+            image = clipboard.image()
+            if image.isNull():
+                self._set_status(tr("no_clipboard_image", self._lang))
+                return
+            try:
+                temp_path = Path(tempfile.gettempdir()) / "beadstudio_paste.png"
+                if not image.save(str(temp_path)):
+                    raise OSError("QImage.save returned False")
+            except Exception as exc:  # noqa: BLE001 — surface, never crash
+                _log.warning("Could not save pasted image: %s", exc)
+                self._set_status(tr("no_clipboard_image", self._lang))
+                return
+            self._load_input_image(str(temp_path))
+            return
+        path = _image_drop_path(mime)
+        if path:
+            self._load_input_image(path)
+            return
+        self._set_status(tr("no_clipboard_image", self._lang))
+
+    def dragEnterEvent(self, event: QDragEnterEvent) -> None:
+        """Accept image-file drags window-wide; highlight the image label."""
+        if _image_drop_path(event.mimeData()):
+            event.acceptProposedAction()
+            self.settings.set_image_hint_active(True)
+        else:
+            event.ignore()
+
+    def dragLeaveEvent(self, event: QDragLeaveEvent) -> None:
+        self.settings.set_image_hint_active(False)
+        event.accept()
+
+    def dropEvent(self, event: QDropEvent) -> None:
+        """Drop the first image file URL → set + auto-convert."""
+        path = _image_drop_path(event.mimeData())
+        self.settings.set_image_hint_active(False)
+        if path:
+            event.acceptProposedAction()
+            self._load_input_image(path)
+        else:
+            event.ignore()
+            self._set_status(tr("err_image_missing", self._lang))
 
     def _convert(self) -> None:
         """Run the conversion with the current settings and render the result.

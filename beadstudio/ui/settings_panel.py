@@ -244,14 +244,32 @@ class SettingsPanel(QWidget):
     def set_image_path(self, path: str) -> None:
         """Set the selected source image (also used by the picker dialog)."""
         self._image_path = path or None
+        self._apply_image_label()
+        self._refresh_output_dir_label()
+        self._emit_params()
+
+    def set_image_hint_active(self, active: bool) -> None:
+        """Swap the image label to a transient drag-over hint (or restore it).
+
+        The window-level drag & drop uses this as the visual affordance: on
+        drag-enter the label reads "release to load", and on drag-leave/drop
+        it is restored to the filename / default text. Never touches
+        ``_image_path`` and never emits ``params_changed``.
+        """
+        if active:
+            self.image_label.setText(tr("drop_accept", self._lang))
+            self.image_label.setToolTip(tr("drop_hint", self._lang))
+        else:
+            self._apply_image_label()
+
+    def _apply_image_label(self) -> None:
+        """Render the image label from ``_image_path`` (shared by all paths)."""
         if self._image_path:
             self.image_label.setText(Path(self._image_path).name)
             self.image_label.setToolTip(self._image_path)
         else:
             self.image_label.setText(tr("image_path_default", self._lang))
             self.image_label.setToolTip("")
-        self._refresh_output_dir_label()
-        self._emit_params()
 
     def image_path(self) -> Optional[str]:
         """Currently selected source image path (or None)."""
@@ -294,13 +312,8 @@ class SettingsPanel(QWidget):
 
         # image picker
         self.choose_button.setText(tr("choose_image", lang))
-        if self._image_path:
-            # Filename / path are value text, not translations.
-            self.image_label.setText(Path(self._image_path).name)
-            self.image_label.setToolTip(self._image_path)
-        else:
-            self.image_label.setText(tr("image_path_default", lang))
-            self.image_label.setToolTip("")
+        # Filename / path are value text, not translations.
+        self._apply_image_label()
         self._output_dir_label.setText(tr("output_dir", lang))
         self.output_dir_button.setText(tr("choose_output_dir", lang))
         # self.output_dir_label shows the actual path — value text, untouched.
