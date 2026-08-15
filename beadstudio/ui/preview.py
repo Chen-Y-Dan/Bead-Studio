@@ -18,16 +18,21 @@ from PySide6.QtGui import QColor, QFont, QFontMetrics, QImage, QPainter, QPen
 from PySide6.QtWidgets import QComboBox, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 from beadstudio.ui.i18n import get_language, tr
+from beadstudio.ui.theme import COLORS
 
 #: Available cell sizes in px (zoom levels).
 ZOOM_SIZES = (4, 6, 8, 10, 12, 16, 20, 24, 28, 32)
 _DEFAULT_CELL_SIZE = 16
 #: Minimum cell size (px) for drawing the bead code text inside cells.
 _CODE_TEXT_MIN_SIZE = 14
-#: Grid line color (light gray).
-_GRID_COLOR = QColor(190, 190, 190)
-#: Empty (transparent) cell fill.
-_EMPTY_COLOR = QColor(238, 238, 238)
+#: Grid line color — DESIGN.md §8: subtle on the dark canvas.
+_GRID_COLOR = QColor(COLORS["grid"])
+#: Empty (None code) cell fill — DESIGN.md §8: neutral dark, no light gray.
+_EMPTY_COLOR = QColor(COLORS["empty_cell"])
+#: Preview canvas surround — DESIGN.md §8: recessed card darker than the window.
+_CANVAS_BG = QColor(COLORS["preview_bg"])
+#: Canvas minimum size so the empty-state placeholder stays legible.
+_CANVAS_MIN_W, _CANVAS_MIN_H = 400, 280
 _GRID_LUMINANCE_THRESHOLD = 140
 
 
@@ -55,17 +60,35 @@ def build_grid_rgb(
 
 
 class _Canvas(QWidget):
-    """Inner paint surface; draws the current QImage at natural size."""
+    """Inner paint surface; draws the current QImage at natural size.
+
+    When no pattern is loaded the surface paints a centered bilingual
+    placeholder (DESIGN.md §8) instead of a blank canvas. The themed
+    background/border come from QSS via the ``previewCanvas`` object name.
+    """
 
     def __init__(self, owner: "PreviewWidget") -> None:
         super().__init__(owner)
         self._owner = owner
+        self.setObjectName("previewCanvas")
+        self.setAttribute(Qt.WA_StyledBackground, True)
+        self.setMinimumSize(_CANVAS_MIN_W, _CANVAS_MIN_H)
 
     def paintEvent(self, _event) -> None:  # noqa: N802 (Qt naming)
+        painter = QPainter(self)
         image = self._owner.image()
         if image is None:
+            painter.fillRect(self.rect(), _CANVAS_BG)
+            painter.setPen(QColor(COLORS["text_secondary"]))
+            font = QFont(painter.font())
+            font.setPointSize(10)
+            painter.setFont(font)
+            painter.drawText(
+                self.rect(),
+                Qt.AlignCenter,
+                tr("preview_empty", self._owner._lang),
+            )
             return
-        painter = QPainter(self)
         painter.drawImage(0, 0, image)
 
 
@@ -157,11 +180,14 @@ class PreviewWidget(QWidget):
             return self._image
         if self.grid_rgb is None or self.grid_rgb.size == 0:
             self._image = None
+            # Back to the placeholder minimum so the canvas fills the
+            # scroll viewport again instead of lingering at the old size.
+            self._canvas.setMinimumSize(_CANVAS_MIN_W, _CANVAS_MIN_H)
             self._canvas.update()
             return QImage()
         height, width, _ = self.grid_rgb.shape
         self._image = self._draw(self.grid_rgb, self.codes, width, height)
-        self._canvas.setFixedSize(self._image.size())
+        self._canvas.setMinimumSize(self._image.size())
         self._canvas.update()
         return self._image
 

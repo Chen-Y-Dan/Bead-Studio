@@ -95,7 +95,11 @@ class MainWindow(QMainWindow):
         self.preview = PreviewWidget(self, lang=self._lang)
         self.scroll = QScrollArea(self)
         self.scroll.setWidget(self.preview)
-        self.scroll.setWidgetResizable(False)
+        # widgetResizable(True): the widget grows with the canvas (large
+        # patterns scroll) and fills the viewport when the canvas is small
+        # (e.g. the empty-state placeholder). With False the scroll area
+        # would keep the widget at its initial size and clip big patterns.
+        self.scroll.setWidgetResizable(True)
 
         view_options = QHBoxLayout()
         view_options.addStretch(1)
@@ -393,6 +397,15 @@ class MainWindow(QMainWindow):
 def main() -> int:
     """Create the QApplication, show the main window, run the event loop."""
     app = QApplication(sys.argv)
+    # Dark theme (Fusion + QSS). Optional-safe: a theme failure must never
+    # prevent the app from starting with the default native look.
+    try:
+        from beadstudio.ui.theme import apply_theme
+
+        apply_theme(app)
+    except Exception:  # noqa: BLE001 — cosmetic layer, never fatal
+        _log.warning("Dark theme failed to apply; using the default style",
+                     exc_info=True)
     if _ICON_PATH.exists():
         app.setWindowIcon(QIcon(str(_ICON_PATH)))
     window = MainWindow()

@@ -164,7 +164,7 @@ class SettingsPanel(QWidget):
         dither_row = QHBoxLayout()
         self.dither_check = QCheckBox(tr("dither", self._lang), param_box)
         self.dither_hint = QLabel(tr("dither_mean_hint", self._lang), param_box)
-        self.dither_hint.setStyleSheet("color: gray;")
+        self.dither_hint.setObjectName("hintLabel")  # styled via theme QSS
         dither_row.addWidget(self.dither_check)
         dither_row.addWidget(self.dither_hint)
         dither_row.addStretch(1)
@@ -174,7 +174,7 @@ class SettingsPanel(QWidget):
         bg_remove_row = QHBoxLayout()
         self.bg_remove_check = QCheckBox(tr("bg_remove", self._lang), param_box)
         self.bg_remove_hint = QLabel(tr("bg_remove_hint", self._lang), param_box)
-        self.bg_remove_hint.setStyleSheet("color: gray;")
+        self.bg_remove_hint.setObjectName("hintLabel")  # styled via theme QSS
         self.bg_remove_hint.setWordWrap(True)
         bg_remove_row.addWidget(self.bg_remove_check)
         bg_remove_row.addWidget(self.bg_remove_hint, 1)
@@ -199,6 +199,7 @@ class SettingsPanel(QWidget):
         # -- actions --------------------------------------------------------
         action_layout = QHBoxLayout()
         self.convert_button = QPushButton(tr("convert", self._lang), self)
+        self.convert_button.setObjectName("primaryButton")  # accent CTA via theme QSS
         self.convert_button.clicked.connect(self.convert_clicked)
         self.batch_button = QPushButton(tr("batch", self._lang), self)
         self.batch_button.clicked.connect(self.batch_clicked)

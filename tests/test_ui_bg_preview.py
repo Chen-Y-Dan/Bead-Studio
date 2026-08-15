@@ -21,7 +21,7 @@ from PIL import Image  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
 from beadstudio.app import MainWindow  # noqa: E402
-from beadstudio.ui.preview import PreviewWidget  # noqa: E402
+from beadstudio.ui.preview import PreviewWidget, _GRID_COLOR  # noqa: E402
 from beadstudio.ui.settings_panel import SettingsPanel  # noqa: E402
 
 
@@ -150,11 +150,17 @@ def test_grid_toggle_changes_render(qapp):
     without_grid = bytes(preview.image().bits())
     assert without_grid != with_grid
 
-    # Grid color (190,190,190) is present when on, absent when off. RGB32
-    # pixels are BGRX in memory, but gray is order-independent.
+    # The theme's grid color is present when on, absent when off. RGB32
+    # pixels are BGRX in memory, so compare in blue-green-red order.
+    grid_bgr = (
+        _GRID_COLOR.blue(),
+        _GRID_COLOR.green(),
+        _GRID_COLOR.red(),
+    )
+
     def has_grid_color(data: bytes) -> bool:
         arr = np.frombuffer(data, dtype=np.uint8).reshape(-1, 4)
-        return bool(np.any(np.all(arr[:, :3] == (190, 190, 190), axis=1)))
+        return bool(np.any(np.all(arr[:, :3] == grid_bgr, axis=1)))
 
     assert has_grid_color(with_grid)
     assert not has_grid_color(without_grid)
