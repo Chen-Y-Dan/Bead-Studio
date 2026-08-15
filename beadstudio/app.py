@@ -19,6 +19,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
+    QComboBox,
     QFileDialog,
     QHBoxLayout,
     QLabel,
@@ -33,7 +34,7 @@ from PySide6.QtWidgets import (
 from beadstudio.core import palette as palette_mod
 from beadstudio.core.convert import convert
 from beadstudio.core.export import export_pdf, export_png, shopping_list_csv
-from beadstudio.ui.i18n import get_language, tr
+from beadstudio.ui.i18n import get_language, set_language, tr
 from beadstudio.ui.preview import PreviewWidget, build_grid_rgb
 from beadstudio.ui.settings_panel import SettingsPanel
 
@@ -107,6 +108,14 @@ class MainWindow(QMainWindow):
         self.show_codes_check.setChecked(True)
         view_options.addWidget(self.show_grid_check)
         view_options.addWidget(self.show_codes_check)
+        # Manual language switcher (top-right). Both option names are shown
+        # in either language by design; the index mirrors get_language().
+        self.lang_combo = QComboBox(self)
+        self.lang_combo.setObjectName("langCombo")
+        self.lang_combo.addItem(tr("lang_zh", self._lang))
+        self.lang_combo.addItem(tr("lang_en", self._lang))
+        self.lang_combo.setCurrentIndex(0 if self._lang == "zh" else 1)
+        view_options.addWidget(self.lang_combo)
 
         right_layout = QVBoxLayout()
         right_layout.setContentsMargins(0, 0, 0, 0)
@@ -132,6 +141,7 @@ class MainWindow(QMainWindow):
         # View toggles only re-render the existing pattern — never reconvert.
         self.show_grid_check.toggled.connect(self.preview.set_show_grid)
         self.show_codes_check.toggled.connect(self.preview.set_show_codes)
+        self.lang_combo.currentIndexChanged.connect(self._on_language_changed)
 
     # ------------------------------------------------------------------ API
 
@@ -139,6 +149,29 @@ class MainWindow(QMainWindow):
         # Conversion is explicit: it runs only when the user presses the
         # Generate Preview button — never on parameter changes.
         self._convert()
+
+    def _on_language_changed(self, index: int) -> None:
+        """Switch every visible string to the selected language in place.
+
+        Combo order is fixed (index 0 = 中文, 1 = English). Retranslation is
+        pushed into the settings panel, preview, view toggles and window
+        title; user-entered values are preserved by ``retranslate``.
+        """
+        if index < 0:
+            return
+        lang = "zh" if index == 0 else "en"
+        old_ready = tr("status_ready", self._lang)
+        set_language(lang)
+        self._lang = lang
+        self.settings.retranslate(lang)
+        self.preview.retranslate(lang)
+        self.show_grid_check.setText(tr("show_grid", lang))
+        self.show_codes_check.setText(tr("show_codes", lang))
+        # Only downgrade a still-fresh "Ready" status to the new language —
+        # never clobber a conversion result / error message.
+        if self.status_label.text() == old_ready:
+            self.status_label.setText(tr("status_ready", lang))
+        self.setWindowTitle(tr("window_title", lang))
 
     def _convert(self) -> None:
         """Run the conversion with the current settings and render the result.

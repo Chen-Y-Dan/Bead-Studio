@@ -88,7 +88,8 @@ class SettingsPanel(QWidget):
 
         # output directory (button + path label)
         output_row = QHBoxLayout()
-        output_row.addWidget(QLabel(tr("output_dir", self._lang), file_box))
+        self._output_dir_label = QLabel(tr("output_dir", self._lang), file_box)
+        output_row.addWidget(self._output_dir_label)
         self.output_dir_button = QPushButton(
             tr("choose_output_dir", self._lang), file_box
         )
@@ -106,7 +107,8 @@ class SettingsPanel(QWidget):
 
         # brand
         brand_row = QHBoxLayout()
-        brand_row.addWidget(QLabel(tr("brand", self._lang), param_box))
+        self._brand_label = QLabel(tr("brand", self._lang), param_box)
+        brand_row.addWidget(self._brand_label)
         self.brand_combo = QComboBox(param_box)
         for name in list_brands():
             self.brand_combo.addItem(name)
@@ -115,12 +117,14 @@ class SettingsPanel(QWidget):
 
         # width / height
         size_row = QHBoxLayout()
-        size_row.addWidget(QLabel(tr("width", self._lang), param_box))
+        self._width_label = QLabel(tr("width", self._lang), param_box)
+        size_row.addWidget(self._width_label)
         self.width_spin = QSpinBox(param_box)
         self.width_spin.setRange(1, 300)
         self.width_spin.setValue(100)
         size_row.addWidget(self.width_spin, 1)
-        size_row.addWidget(QLabel(tr("height", self._lang), param_box))
+        self._height_label = QLabel(tr("height", self._lang), param_box)
+        size_row.addWidget(self._height_label)
         self.height_spin = QSpinBox(param_box)
         self.height_spin.setRange(0, 300)
         self.height_spin.setValue(0)
@@ -132,7 +136,8 @@ class SettingsPanel(QWidget):
         self.series_box = QWidget(param_box)
         series_row = QHBoxLayout(self.series_box)
         series_row.setContentsMargins(0, 0, 0, 0)
-        series_row.addWidget(QLabel(tr("series", self._lang), self.series_box))
+        self._series_label = QLabel(tr("series", self._lang), self.series_box)
+        series_row.addWidget(self._series_label)
         self.series_combo = QComboBox(self.series_box)
         self.series_combo.addItem(tr("series_all", self._lang))
         series_row.addWidget(self.series_combo, 1)
@@ -142,7 +147,8 @@ class SettingsPanel(QWidget):
         self.max_colors_box = QWidget(param_box)
         colors_row = QHBoxLayout(self.max_colors_box)
         colors_row.setContentsMargins(0, 0, 0, 0)
-        colors_row.addWidget(QLabel(tr("max_colors", self._lang), self.max_colors_box))
+        self._colors_label = QLabel(tr("max_colors", self._lang), self.max_colors_box)
+        colors_row.addWidget(self._colors_label)
         self.max_colors_spin = QSpinBox(self.max_colors_box)
         self.max_colors_spin.setRange(0, 100)
         self.max_colors_spin.setValue(30)
@@ -152,7 +158,8 @@ class SettingsPanel(QWidget):
 
         # cell mode (dominant / mean), default mean
         mode_row = QHBoxLayout()
-        mode_row.addWidget(QLabel(tr("cell_mode", self._lang), param_box))
+        self._cell_mode_label = QLabel(tr("cell_mode", self._lang), param_box)
+        mode_row.addWidget(self._cell_mode_label)
         self.mode_radios: Dict[str, QRadioButton] = {}
         for mode in _CELL_MODES:
             radio = QRadioButton(tr(f"cell_mode_{mode}", self._lang), param_box)
@@ -190,7 +197,8 @@ class SettingsPanel(QWidget):
 
         # export format (W2: parameter capture only; W3 wires real export)
         export_row = QHBoxLayout()
-        export_row.addWidget(QLabel(tr("export_format", self._lang), param_box))
+        self._export_label = QLabel(tr("export_format", self._lang), param_box)
+        export_row.addWidget(self._export_label)
         self.export_pdf_check = QCheckBox(tr("export_pdf", self._lang), param_box)
         self.export_csv_check = QCheckBox(tr("export_csv", self._lang), param_box)
         export_row.addWidget(self.export_pdf_check)
@@ -273,6 +281,73 @@ class SettingsPanel(QWidget):
     def set_brand(self, brand: str) -> None:
         """Switch the brand combo (repopulates series, updates visibility)."""
         self.brand_combo.setCurrentText(brand)
+
+    def retranslate(self, lang: str) -> None:
+        """Re-apply every user-visible text for ``lang`` without touching values.
+
+        Called by the app's language switcher: spins keep their numbers,
+        combos keep their selection and checkboxes keep their checked state.
+        ``self._lang`` is updated first so ``params()`` keeps comparing the
+        series combo against the translated "全部 / All" item correctly.
+        """
+        self._lang = lang
+
+        # image picker
+        self.choose_button.setText(tr("choose_image", lang))
+        if self._image_path:
+            # Filename / path are value text, not translations.
+            self.image_label.setText(Path(self._image_path).name)
+            self.image_label.setToolTip(self._image_path)
+        else:
+            self.image_label.setText(tr("image_path_default", lang))
+            self.image_label.setToolTip("")
+        self._output_dir_label.setText(tr("output_dir", lang))
+        self.output_dir_button.setText(tr("choose_output_dir", lang))
+        # self.output_dir_label shows the actual path — value text, untouched.
+
+        # parameters
+        self._brand_label.setText(tr("brand", lang))
+        self._width_label.setText(tr("width", lang))
+        self._height_label.setText(tr("height", lang))
+        self.height_spin.setToolTip(tr("height", lang))
+        self._series_label.setText(tr("series", lang))
+        self._colors_label.setText(tr("max_colors", lang))
+        self.max_colors_spin.setToolTip(tr("max_colors", lang))
+
+        # cell mode (dominant / mean)
+        self._cell_mode_label.setText(tr("cell_mode", lang))
+        for mode in _CELL_MODES:
+            self.mode_radios[mode].setText(tr(f"cell_mode_{mode}", lang))
+
+        # dither + hint (re-apply the mean-mode visibility rule)
+        self.dither_check.setText(tr("dither", lang))
+        self.dither_hint.setText(tr("dither_mean_hint", lang))
+        mean_active = self.mode_radios["mean"].isChecked()
+        self.dither_check.setEnabled(not mean_active)
+        self.dither_hint.setVisible(mean_active)
+
+        # background removal (tooltip only when the optional dep is missing)
+        self.bg_remove_check.setText(tr("bg_remove", lang))
+        self.bg_remove_hint.setText(tr("bg_remove_hint", lang))
+        if not self.bg_remove_check.isEnabled():
+            self.bg_remove_check.setToolTip(tr("bg_remove_disabled", lang))
+
+        # export format
+        self._export_label.setText(tr("export_format", lang))
+        self.export_pdf_check.setText(tr("export_pdf", lang))
+        self.export_csv_check.setText(tr("export_csv", lang))
+
+        # actions
+        self.generate_preview_button.setText(tr("generate_preview", lang))
+        self.batch_button.setText(tr("batch", lang))
+
+        # series combo: translate only the "全部 / All" first item; the
+        # brand's series prefixes are language-independent. setItemText does
+        # not emit selection signals, but guard anyway.
+        if self.series_combo.count() > 0:
+            self.series_combo.blockSignals(True)
+            self.series_combo.setItemText(0, tr("series_all", lang))
+            self.series_combo.blockSignals(False)
 
     def params(self) -> dict[str, Any]:
         """Snapshot of the current parameter state (dict emitted on changes).

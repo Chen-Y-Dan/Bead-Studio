@@ -108,7 +108,8 @@ class PreviewWidget(QWidget):
         self._image: Optional[QImage] = None
 
         header = QHBoxLayout()
-        header.addWidget(QLabel(tr("cell_size", self._lang), self))
+        self._cell_label = QLabel(tr("cell_size", self._lang), self)
+        header.addWidget(self._cell_label)
         self.zoom_combo = QComboBox(self)
         for size in ZOOM_SIZES:
             self.zoom_combo.addItem(f"{size} px", size)
@@ -150,6 +151,16 @@ class PreviewWidget(QWidget):
         """
         self._show_codes = bool(show)
         self.render()
+
+    def retranslate(self, lang: str) -> None:
+        """Re-apply user-visible text for ``lang`` (header + empty-state hint).
+
+        A rendered pattern is language-independent, so only the cell-size
+        caption and the painted placeholder need refreshing.
+        """
+        self._lang = lang
+        self._cell_label.setText(tr("cell_size", lang))
+        self._canvas.update()  # empty-state text repaints in the new language
 
     def set_pattern(
         self,

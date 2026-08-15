@@ -19,6 +19,11 @@ from typing import Tuple
 LANG: dict[str, Tuple[str, str]] = {
     # window
     "window_title": ("BeadStudio", "BeadStudio 豆趣工坊"),
+    # manual language switcher (both option names are language-invariant,
+    # so the combo always shows 中文 / English in either language)
+    "language": ("Language", "语言"),
+    "lang_zh": ("中文", "中文"),
+    "lang_en": ("English", "English"),
     # settings labels
     "brand": ("Brand", "品牌"),
     "width": ("Width (beads)", "宽度（珠数）"),
