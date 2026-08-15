@@ -53,7 +53,7 @@ LANG: dict[str, Tuple[str, str]] = {
     "export_csv": ("Shopping list CSV", "购物清单 CSV"),
     # buttons
     "choose_image": ("Choose image…", "选择图片"),
-    "convert": ("Convert", "转换"),
+    "generate_preview": ("Generate Preview", "生成预览"),
     "batch": ("Batch folder…", "批量处理文件夹"),
     # output directory
     "output_dir": ("Output directory", "输出目录"),
@@ -63,8 +63,8 @@ LANG: dict[str, Tuple[str, str]] = {
     "image_path_default": ("No image selected", "未选择图片"),
     # preview
     "cell_size": ("Cell size", "格子大小"),
-    "preview_empty": ("No pattern yet — choose an image and press Convert",
-                      "尚无图案 —— 请选择图片后点击“转换”"),
+    "preview_empty": ("No pattern yet — choose an image and press Generate Preview",
+                      "尚无图案 —— 请选择图片后点击“生成预览”"),
     # status bar
     "status_ready": ("Ready", "就绪"),
     "status_converting": ("Converting…", "转换中…"),

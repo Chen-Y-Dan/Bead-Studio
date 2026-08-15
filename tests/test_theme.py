@@ -108,12 +108,70 @@ def test_stylesheet_covers_core_tokens(qapp):
         assert selector in qss, f"selector {selector} missing from DARK_QSS"
 
 
+def test_spinbox_arrows_visible_in_qss(qapp):
+    """Spinbox/combo arrows are explicit light PNG images (the dark-on-dark
+    fix), shipped as real asset files.
+
+    Data-URI arrows silently fail to load in Qt's QSS loader, and Fusion's
+    built-in arrows render dark-on-dark under the dark palette/stylesheet —
+    so the arrows must be real image references AND the buttons must keep a
+    lighter surface + visible border (never `border: none`).
+    """
+    qss = theme.DARK_QSS
+    # arrow subcontrols carry explicit image references
+    assert "QSpinBox::up-arrow" in qss
+    assert "QSpinBox::down-arrow" in qss
+    assert "QComboBox::down-arrow" in qss
+    assert "image: url('" in qss
+    # the referenced asset files actually exist
+    for name in ("arrow_up.png", "arrow_down.png"):
+        assert (theme._ASSETS_DIR / name).is_file(), f"missing arrow asset {name}"
+    # button hit-areas: lighter surface + visible border, never border:none
+    start = qss.index("QSpinBox::up-button, QSpinBox::down-button")
+    end = qss.index("}", start)
+    button_block = qss[start:end]
+    assert theme.COLORS["surface_hover"] in button_block
+    assert theme.COLORS["border_strong"] in button_block
+    assert "border: none" not in button_block
+    # hover/pressed feedback on the arrow buttons + combo drop-down
+    assert "QSpinBox::up-button:hover" in qss
+    assert "QSpinBox::up-button:pressed" in qss
+    assert "QComboBox::drop-down:hover" in qss
+
+
+def test_spinbox_arrows_render_offscreen(qapp):
+    """Rendered evidence: the spinbox arrow strip contains light arrow pixels
+    after apply_theme (offscreen platform, like the theme screenshot tests).
+
+    Without the fix (dark buttons + Fusion's dark arrows) this strip is
+    entirely dark; with the fix the text_secondary chevrons show up.
+    """
+    window = MainWindow()
+    window.show()
+    qapp.processEvents()
+    spin = window.settings.width_spin
+    img = window.grab().toImage()
+    h, w = img.height(), img.width()
+    data = np.frombuffer(img.constBits(), dtype=np.uint8)[: img.sizeInBytes()].copy()
+    arr = data.reshape(h, img.bytesPerLine() // 4, 4)[:, :, :3]
+    tl = spin.mapTo(window, spin.rect().topLeft())
+    strip = arr[tl.y() : tl.y() + spin.height() + 4,
+                tl.x() + spin.width() - 18 : tl.x() + spin.width() + 2]
+    # arrow chevrons are text_secondary #9AA3B2 -> BGR (178, 163, 154)
+    hexs = theme.COLORS["text_secondary"][1:]
+    r, g, b = (int(hexs[i : i + 2], 16) for i in (0, 2, 4))
+    target = np.array([b, g, r])
+    hits = np.sum(np.all(np.abs(strip.astype(int) - target) < 45, axis=-1))
+    window.close()
+    assert hits >= 20, f"only {hits} light arrow pixels in the spinbox strip"
+
+
 def test_main_window_constructs_with_theme(qapp):
     """Themed MainWindow builds and shows without errors."""
     window = MainWindow()
     window.show()
     qapp.processEvents()
-    assert window.settings.convert_button.objectName() == "primaryButton"
+    assert window.settings.generate_preview_button.objectName() == "primaryButton"
     assert window.preview.image() is None
     assert window.preview._canvas.objectName() == "previewCanvas"
     window.close()

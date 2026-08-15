@@ -1,10 +1,12 @@
 """Settings panel: image picker + conversion parameter controls.
 
 Emits :attr:`params_changed` (with a params dict) on every control change,
-:attr:`convert_clicked` when the Convert button is pressed, and
-:attr:`batch_clicked` when the batch button is pressed. The panel also
-captures the export output directory (defaults to the source image's folder,
-or the user's Pictures when no image is selected yet).
+:attr:`generate_preview_clicked` when the Generate Preview button is pressed,
+and :attr:`batch_clicked` when the batch button is pressed. Conversion is an
+explicit user action — parameter changes only report state via
+``params_changed`` and never trigger a conversion by themselves. The panel
+also captures the export output directory (defaults to the source image's
+folder, or the user's Pictures when no image is selected yet).
 
 The series/max-colors visibility rule follows the engine: brands with letter
 series (``get_series(brand)`` non-empty, e.g. mard) show 系列 and hide 颜色数;
@@ -59,8 +61,8 @@ class SettingsPanel(QWidget):
 
     #: Emitted with a params dict whenever any control changes.
     params_changed = Signal(object)
-    #: Emitted when the Convert button is pressed.
-    convert_clicked = Signal()
+    #: Emitted when the Generate Preview button is pressed.
+    generate_preview_clicked = Signal()
     #: Emitted when the batch-folder button is pressed.
     batch_clicked = Signal()
 
@@ -198,12 +200,12 @@ class SettingsPanel(QWidget):
 
         # -- actions --------------------------------------------------------
         action_layout = QHBoxLayout()
-        self.convert_button = QPushButton(tr("convert", self._lang), self)
-        self.convert_button.setObjectName("primaryButton")  # accent CTA via theme QSS
-        self.convert_button.clicked.connect(self.convert_clicked)
+        self.generate_preview_button = QPushButton(tr("generate_preview", self._lang), self)
+        self.generate_preview_button.setObjectName("primaryButton")  # accent CTA via theme QSS
+        self.generate_preview_button.clicked.connect(self.generate_preview_clicked)
         self.batch_button = QPushButton(tr("batch", self._lang), self)
         self.batch_button.clicked.connect(self.batch_clicked)
-        action_layout.addWidget(self.convert_button)
+        action_layout.addWidget(self.generate_preview_button)
         action_layout.addWidget(self.batch_button)
 
         root = QVBoxLayout(self)

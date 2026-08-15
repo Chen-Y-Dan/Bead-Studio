@@ -1,9 +1,11 @@
 """Application bootstrap: QApplication + main window.
 
 W2: full settings/preview UI on top of the core engine — a left-hand
-settings panel (bilingual) and a scrollable live preview on the right.
-Conversion runs on Convert click or 500 ms after any parameter change
-(debounced QTimer). Offscreen-platform safe (no hardcoded platform calls).
+settings panel (bilingual) and a scrollable preview on the right.
+Conversion runs only when the user presses Generate Preview (an explicit
+action — parameter changes never trigger a conversion, so there is no
+debounced auto-preview and no lag while dragging controls). Offscreen-
+platform safe (no hardcoded platform calls).
 """
 
 from __future__ import annotations
@@ -13,7 +15,6 @@ import sys
 from pathlib import Path
 from typing import Any, Optional
 
-from PySide6.QtCore import QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QApplication,
@@ -40,9 +41,6 @@ _log = logging.getLogger("beadstudio.app")
 
 _ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 _ICON_PATH = _ASSETS_DIR / "app_icon_512.png"
-
-#: Debounce delay (ms) before an auto-conversion triggered by param changes.
-_DEBOUNCE_MS = 500
 
 #: Image extensions accepted in batch-folder mode (engine's supported list).
 _SUPPORTED_EXTS = {".png", ".jpg", ".jpeg", ".bmp", ".webp", ".gif"}
@@ -127,26 +125,19 @@ class MainWindow(QMainWindow):
         self.statusBar().addWidget(self.status_label)
 
         # -- wiring --------------------------------------------------------------
-        self.settings.convert_clicked.connect(self._on_convert_clicked)
+        self.settings.generate_preview_clicked.connect(
+            self._on_generate_preview_clicked
+        )
         self.settings.batch_clicked.connect(self._on_batch_clicked)
-        self.settings.params_changed.connect(self._on_params_changed)
         # View toggles only re-render the existing pattern — never reconvert.
         self.show_grid_check.toggled.connect(self.preview.set_show_grid)
         self.show_codes_check.toggled.connect(self.preview.set_show_codes)
-        self._debounce = QTimer(self)
-        self._debounce.setSingleShot(True)
-        self._debounce.setInterval(_DEBOUNCE_MS)
-        self._debounce.timeout.connect(self._convert)
 
     # ------------------------------------------------------------------ API
 
-    def _on_params_changed(self, _params: dict[str, Any]) -> None:
-        # Any control change schedules a conversion (unless the user just
-        # pressed Convert, which cancels the timer and converts at once).
-        self._debounce.start()
-
-    def _on_convert_clicked(self) -> None:
-        self._debounce.stop()
+    def _on_generate_preview_clicked(self) -> None:
+        # Conversion is explicit: it runs only when the user presses the
+        # Generate Preview button — never on parameter changes.
         self._convert()
 
     def _convert(self) -> None:

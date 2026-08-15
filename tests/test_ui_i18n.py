@@ -225,3 +225,39 @@ def test_convert_flow_mard_mean(qapp, tmp_path):
     # status bar reports the conversion
     assert "转换完成" in window.status_label.text()
     window.close()
+
+
+def test_param_change_does_not_auto_convert(qapp, tmp_path):
+    """Param changes must NOT auto-convert (no live preview / debounce) —
+    only an explicit Generate Preview click runs the conversion."""
+    png = tmp_path / "red.png"
+    image_path = _make_red_image(png)
+
+    window = MainWindow()
+    window.show()
+    qapp.processEvents()
+
+    window.settings.set_image_path(image_path)
+    window.settings.width_spin.setValue(16)
+    window.settings.set_brand("mard")
+    qapp.processEvents()
+
+    # Implicit conversion must NOT have happened while setting params.
+    assert window._last_result is None
+    assert window.preview.image() is None
+    assert "转换完成" not in window.status_label.text()
+
+    # Explicit Generate Preview click DOES convert (full signal path).
+    window.settings.generate_preview_button.click()
+    qapp.processEvents()
+    assert window._last_result is not None
+    assert window._last_result["width"] == 16
+    assert window.preview.grid_rgb is not None
+    assert not window.preview.image().isNull()
+    assert "转换完成" in window.status_label.text()
+
+    # A later param change still must not re-convert on its own.
+    window.settings.width_spin.setValue(24)
+    qapp.processEvents()
+    assert window._last_result["width"] == 16  # unchanged: still the click result
+    window.close()

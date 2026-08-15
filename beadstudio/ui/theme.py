@@ -14,6 +14,7 @@ tests call it directly.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Dict
 
 from PySide6.QtGui import QColor, QFont, QPalette
@@ -63,6 +64,28 @@ _BASE_FONT_SIZE = "9pt"
 
 #: Combo-popup selection (DESIGN.md §6): accent-tinted bg + amber text.
 _COMBO_SELECTED_BG = "#3A3322"
+
+#: Repo asset folder (theme.py lives one level deeper than app.py, so it
+#: needs an extra ``parent`` to reach the repo root).
+_ASSETS_DIR = Path(__file__).resolve().parent.parent.parent / "assets"
+
+
+def _asset_uri(name: str) -> str:
+    """Absolute QSS ``url()`` for an asset file (forward-slash path).
+
+    Qt's QSS image loader cannot load ``data:image/...;base64`` URIs (they
+    silently render nothing), so the arrow images ship as real PNG files and
+    are referenced by absolute path, exactly like the window icon.
+    """
+    return f"url('{(_ASSETS_DIR / name).as_posix()}')"
+
+
+#: Light chevron arrows (#9AA3B2 text_secondary) for the spinbox/combo
+#: up/down subcontrols — visible on the dark surface. Real PNG assets, not
+#: data-URIs (see ``_asset_uri``). Fusion's built-in arrows render dark on
+#: the dark palette / stylesheet, so an explicit image is required.
+_ARROW_UP = _asset_uri("arrow_up.png")
+_ARROW_DOWN = _asset_uri("arrow_down.png")
 
 
 def _qss() -> str:
@@ -136,7 +159,7 @@ QPushButton:default {{
     border-color: {c["accent"]};
 }}
 
-/* Primary action (Convert) — bead-amber call to action */
+/* Primary action (Generate Preview) — bead-amber call to action */
 QPushButton#primaryButton {{
     background-color: {c["accent"]};
     border: 1px solid {c["accent"]};
@@ -189,7 +212,11 @@ QComboBox::drop-down {{
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
 }}
+QComboBox::drop-down:hover {{
+    background-color: {c["surface_hover"]};
+}}
 QComboBox::down-arrow {{
+    image: {_ARROW_DOWN};
     width: 10px;
     height: 6px;
 }}
@@ -235,8 +262,8 @@ QSpinBox:disabled {{
 QSpinBox::up-button, QSpinBox::down-button {{
     subcontrol-origin: border;
     width: 16px;
-    border: none;
-    background-color: {c["surface"]};
+    border: 1px solid {c["border_strong"]};
+    background-color: {c["surface_hover"]};
 }}
 QSpinBox::up-button {{
     subcontrol-position: top right;
@@ -246,11 +273,27 @@ QSpinBox::down-button {{
     subcontrol-position: bottom right;
     border-bottom-right-radius: 5px;
 }}
+/* The up/down buttons get a LIGHTER surface + visible border so the arrow
+   hit-areas read clearly, and the arrows themselves are explicit light
+   chevron images (real PNG assets — Qt's QSS loader silently drops
+   ``data:image`` URIs, and Fusion's built-in arrows render dark on the
+   dark palette/stylesheet). */
 QSpinBox::up-button:hover, QSpinBox::down-button:hover {{
-    background-color: {c["surface_hover"]};
+    background-color: {c["scrollbar_handle_hover"]};
+    border-color: {c["text_secondary"]};
 }}
 QSpinBox::up-button:pressed, QSpinBox::down-button:pressed {{
     background-color: {c["surface_pressed"]};
+}}
+QSpinBox::up-arrow {{
+    image: {_ARROW_UP};
+    width: 10px;
+    height: 6px;
+}}
+QSpinBox::down-arrow {{
+    image: {_ARROW_DOWN};
+    width: 10px;
+    height: 6px;
 }}
 
 /* ---------------- QCheckBox / QRadioButton (DESIGN.md §6) ---------------- */
