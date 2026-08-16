@@ -10,7 +10,7 @@
 
 **Image → bead pattern design, fully offline, Windows desktop app**
 
-`v1.0.0` · [GPL-3.0](LICENSE) · PySide6
+`v1.1.0` · [GPL-3.0](LICENSE) · PySide6
 
 </div>
 
