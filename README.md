@@ -78,6 +78,8 @@ network needed — all palette data ships with the app.
 
 **English**：Main window (with a rendered bead pattern preview) and the empty
 state. Both are real renders of the app (dark theme).
+<img width="2559" height="1528" alt="image" src="https://github.com/user-attachments/assets/fa3d43f2-e7a5-4690-8d82-f936e467e5f9" />
+<img width="2559" height="1530" alt="image" src="https://github.com/user-attachments/assets/58e310a4-59e4-4705-85c2-59fcdbc71830" />
 
 ---
 
