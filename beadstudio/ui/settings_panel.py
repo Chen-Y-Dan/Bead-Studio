@@ -18,7 +18,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -28,11 +28,13 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QRadioButton,
+    QSlider,
     QSpinBox,
     QVBoxLayout,
     QWidget,
 )
 
+from beadstudio.core.models import EdgeConfig
 from beadstudio.core.palette import get_series, list_brands
 from beadstudio.ui.i18n import get_language, tr
 
@@ -41,6 +43,40 @@ _CELL_MODES = ("dominant", "mean")
 
 #: Cell-size zoom options for the preview (px per bead cell).
 _ZOOM_SIZES = (4, 6, 8, 10, 12, 16, 20, 24, 28, 32)
+
+#: Advanced (EdgeConfig) slider configs, in display order: key → (min, max,
+#: default-on-slider, value formatter). The slider scale differs per field:
+#: ``mean_edge_deltae_threshold``/``stroke_min_deltae`` are floats in the core
+#: but integers here, and ``stroke_min_fraction`` is a fraction in the core but
+#: a percentage on the slider. Defaults mirror ``EdgeConfig()`` so the sliders
+#: start at the engine's defaults and ``params()["edge_config"]`` is ``None``
+#: until the user actually changes something.
+_ADVANCED_CONFIG = {
+    "smoothness": (60, 180, 115, str),
+    "edge_sensitivity": (5, 30, 15, lambda v: f"{v:.1f}"),
+    "thin_line": (5, 30, 12, lambda v: f"{v}%"),
+    "min_line_len": (3, 10, 5, str),
+    "high_boundary": (120, 255, 180, str),
+    "line_color_diff": (20, 50, 35, str),
+}
+_ADVANCED_KEYS = tuple(_ADVANCED_CONFIG)
+
+
+def _advanced_defaults() -> dict[str, int]:
+    """Slider-scale defaults derived from the engine's ``EdgeConfig()``.
+
+    Deriving from the core (instead of hardcoding) keeps the GUI in sync if the
+    engine's defaults ever change.
+    """
+    ec = EdgeConfig()
+    return {
+        "smoothness": ec.mean_edge_range_low,
+        "edge_sensitivity": int(ec.mean_edge_deltae_threshold),
+        "thin_line": int(round(ec.stroke_min_fraction * 100)),
+        "min_line_len": ec.stroke_min_length,
+        "high_boundary": ec.mean_edge_range_high,
+        "line_color_diff": int(ec.stroke_min_deltae),
+    }
 
 
 def _rembg_available() -> bool:
@@ -215,6 +251,61 @@ class SettingsPanel(QWidget):
         export_row.addStretch(1)
         param_layout.addLayout(export_row)
 
+        # advanced parameters (W6: EdgeConfig tunables — collapsible)
+        # The checkable title is the Qt collapse toggle: checked = expanded,
+        # unchecked = collapsed (the contents are hidden, not just disabled).
+        self.advanced_group = QGroupBox(tr("advanced_params", self._lang), param_box)
+        self.advanced_group.setCheckable(True)
+        self.advanced_group.setChecked(False)  # collapsed by default
+        advanced_shell = QVBoxLayout(self.advanced_group)
+        self.advanced_contents = QWidget(self.advanced_group)
+        advanced_shell.addWidget(self.advanced_contents)
+        advanced_layout = QVBoxLayout(self.advanced_contents)
+        advanced_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.advanced_hint = QLabel(
+            tr("advanced_params_hint", self._lang), self.advanced_contents
+        )
+        self.advanced_hint.setObjectName("hintLabel")  # styled via theme QSS
+        self.advanced_hint.setWordWrap(True)
+        advanced_layout.addWidget(self.advanced_hint)
+
+        self.advanced_name_labels: dict[str, QLabel] = {}
+        self.advanced_sliders: dict[str, QSlider] = {}
+        self.advanced_value_labels: dict[str, QLabel] = {}
+        defaults = _advanced_defaults()
+        for key in _ADVANCED_KEYS:
+            low, high, _default, fmt = _ADVANCED_CONFIG[key]
+            row = QHBoxLayout()
+            name_label = QLabel(tr(key, self._lang), self.advanced_contents)
+            row.addWidget(name_label)
+            slider = QSlider(Qt.Horizontal, self.advanced_contents)
+            slider.setRange(low, high)
+            slider.setValue(defaults[key])
+            slider.valueChanged.connect(self._on_advanced_slider_changed)
+            row.addWidget(slider, 1)
+            value_label = QLabel(self.advanced_contents)
+            value_label.setMinimumWidth(40)
+            value_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            row.addWidget(value_label)
+            advanced_layout.addLayout(row)
+            self.advanced_name_labels[key] = name_label
+            self.advanced_sliders[key] = slider
+            self.advanced_value_labels[key] = value_label
+
+        self.reset_defaults_button = QPushButton(
+            tr("reset_defaults", self._lang), self.advanced_contents
+        )
+        self.reset_defaults_button.clicked.connect(self._reset_advanced_defaults)
+        advanced_layout.addWidget(self.reset_defaults_button)
+
+        self._update_advanced_value_labels()
+        self.advanced_contents.setVisible(False)  # collapsed by default
+        # Expand/collapse toggles the contents' visibility (Qt's checkable
+        # group box only disables children; hiding them is the collapse part).
+        self.advanced_group.toggled.connect(self.advanced_contents.setVisible)
+        param_layout.addWidget(self.advanced_group)
+
         # -- actions --------------------------------------------------------
         action_layout = QHBoxLayout()
         self.generate_preview_button = QPushButton(tr("generate_preview", self._lang), self)
@@ -362,6 +453,13 @@ class SettingsPanel(QWidget):
         self.export_png_check.setText(tr("export_png", lang))
         self.export_csv_check.setText(tr("export_csv", lang))
 
+        # advanced parameters (slider values are numbers — untouched)
+        self.advanced_group.setTitle(tr("advanced_params", lang))
+        self.advanced_hint.setText(tr("advanced_params_hint", lang))
+        for key in _ADVANCED_KEYS:
+            self.advanced_name_labels[key].setText(tr(key, lang))
+        self.reset_defaults_button.setText(tr("reset_defaults", lang))
+
         # actions
         self.generate_preview_button.setText(tr("generate_preview", lang))
         self.batch_button.setText(tr("batch", lang))
@@ -379,7 +477,9 @@ class SettingsPanel(QWidget):
 
         Semantics mirror the engine's ``convert()``: ``height=0`` means
         auto-aspect (None), ``max_colors=0`` means unlimited (None),
-        ``series_range`` is None for flat brands and for series "全部".
+        ``series_range`` is None for flat brands and for series "全部",
+        ``edge_config`` is None when all advanced sliders sit at the
+        ``EdgeConfig()`` defaults (the engine then uses its own default).
         """
         brand = self.brand_combo.currentText()
         series_active = bool(get_series(brand))
@@ -407,6 +507,7 @@ class SettingsPanel(QWidget):
             "export_pdf": self.export_pdf_check.isChecked(),
             "export_png": self.export_png_check.isChecked(),
             "export_csv": self.export_csv_check.isChecked(),
+            "edge_config": self._edge_config(),
             "output_dir": self.output_dir(),
         }
 
@@ -474,3 +575,62 @@ class SettingsPanel(QWidget):
 
     def _emit_params(self, *_args) -> None:
         self.params_changed.emit(self.params())
+
+    # ------------------------------------------------------ advanced params
+
+    def _edge_config(self) -> Optional[EdgeConfig]:
+        """EdgeConfig from the advanced sliders, or ``None`` when all defaults.
+
+        ``None`` preserves the pre-W6 behavior exactly — the engine falls back
+        to ``EdgeConfig()`` — so a default panel emits the same params dict as
+        before. When any slider differs, an ``EdgeConfig`` is built that always
+        satisfies the core's ``__post_init__`` validation: the LOW < HIGH pair
+        is enforced by the slider linkage and re-clamped here as a
+        belt-and-braces guarantee.
+        """
+        values = {key: self.advanced_sliders[key].value() for key in _ADVANCED_KEYS}
+        defaults = _advanced_defaults()
+        if all(values[key] == defaults[key] for key in _ADVANCED_KEYS):
+            return None
+        low = values["smoothness"]
+        high = values["high_boundary"]
+        if low >= high:
+            high = min(low + 1, self.advanced_sliders["high_boundary"].maximum())
+        return EdgeConfig(
+            mean_edge_range_low=low,
+            mean_edge_range_high=high,
+            mean_edge_deltae_threshold=float(values["edge_sensitivity"]),
+            stroke_min_fraction=values["thin_line"] / 100.0,
+            stroke_min_length=values["min_line_len"],
+            stroke_min_deltae=float(values["line_color_diff"]),
+        )
+
+    def _on_advanced_slider_changed(self, *_args) -> None:
+        # LOW < HIGH linkage: the GUI must never hand the core an invalid
+        # EdgeConfig (its __post_init__ would raise). When the smoothness
+        # (low) slider catches up to / passes the high-boundary slider, the
+        # high one snaps to low + 1. smoothness caps at 180 so low + 1 always
+        # fits the high slider's 120-255 range.
+        low = self.advanced_sliders["smoothness"].value()
+        high_slider = self.advanced_sliders["high_boundary"]
+        if low >= high_slider.value():
+            high_slider.blockSignals(True)
+            high_slider.setValue(min(low + 1, high_slider.maximum()))
+            high_slider.blockSignals(False)
+        self._update_advanced_value_labels()
+        self._emit_params()
+
+    def _reset_advanced_defaults(self) -> None:
+        """Snap all six sliders back to the engine's ``EdgeConfig()`` defaults."""
+        defaults = _advanced_defaults()
+        for key, slider in self.advanced_sliders.items():
+            slider.blockSignals(True)
+            slider.setValue(defaults[key])
+            slider.blockSignals(False)
+        self._update_advanced_value_labels()
+        self._emit_params()
+
+    def _update_advanced_value_labels(self) -> None:
+        for key, slider in self.advanced_sliders.items():
+            _min, _max, _default, fmt = _ADVANCED_CONFIG[key]
+            self.advanced_value_labels[key].setText(fmt(slider.value()))

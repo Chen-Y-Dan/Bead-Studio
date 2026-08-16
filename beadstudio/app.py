@@ -43,8 +43,9 @@ from PySide6.QtWidgets import (
 from beadstudio.core import palette as palette_mod
 from beadstudio.core.convert import convert
 from beadstudio.core.export import export_pdf, export_png, shopping_list_csv
+from beadstudio.core.models import Pattern
 from beadstudio.ui.i18n import get_language, set_language, tr
-from beadstudio.ui.preview import PreviewWidget, build_grid_rgb
+from beadstudio.ui.preview import PreviewWidget
 from beadstudio.ui.settings_panel import SettingsPanel
 
 _log = logging.getLogger("beadstudio.app")
@@ -107,7 +108,7 @@ class MainWindow(QMainWindow):
     def __init__(self, lang: Optional[str] = None) -> None:
         super().__init__()
         self._lang = lang or get_language()
-        self._last_result: Optional[dict[str, Any]] = None
+        self._last_result: Optional[Pattern] = None
 
         self.setWindowTitle(tr("window_title", self._lang))
         if _ICON_PATH.exists():
@@ -321,6 +322,7 @@ class MainWindow(QMainWindow):
                 cell_mode=params["cell_mode"],
                 dither=params["dither"],
                 series_range=params["series_range"],
+                edge_config=params.get("edge_config"),
             )
         except Exception as exc:  # noqa: BLE001 — surface any engine error
             message = f"{tr('status_error', self._lang)}：{exc}"
@@ -330,8 +332,9 @@ class MainWindow(QMainWindow):
             return
 
         self._last_result = result
-        grid = build_grid_rgb(result["codes"], result["legend"])
-        self.preview.set_pattern(grid, result["codes"], result["legend"])
+        # W5: convert() returns a typed Pattern whose grid_rgb is authoritative
+        # — no more build_grid_rgb recompute in this path.
+        self.preview.set_pattern(result.grid_rgb, result["codes"], result["legend"])
 
         parts = [
             tr("status_done", self._lang).format(
@@ -515,6 +518,7 @@ class MainWindow(QMainWindow):
                     cell_mode=params["cell_mode"],
                     dither=params["dither"],
                     series_range=params["series_range"],
+                    edge_config=params.get("edge_config"),
                 )
                 stem = img.stem
                 self._export_result(result, params, stem, out_base / stem, with_png=True)

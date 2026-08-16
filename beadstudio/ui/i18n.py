@@ -57,6 +57,20 @@ LANG: dict[str, Tuple[str, str]] = {
     "export_pdf": ("PDF pattern", "导出 PDF"),
     "export_png": ("PNG pattern", "导出 PNG"),
     "export_csv": ("Shopping list CSV", "购物清单 CSV"),
+    # advanced parameters (W6: EdgeConfig tunables, collapsible group)
+    "advanced_params": ("Advanced", "高级参数"),
+    "advanced_params_hint": (
+        "Advanced parameters affect algorithm stability; thresholds adapt to "
+        "image size",
+        "高级参数影响算法稳定性；阈值随图片尺寸自适应",
+    ),
+    "smoothness": ("Smoothness", "平滑度"),
+    "edge_sensitivity": ("Edge sensitivity", "边界敏感度"),
+    "thin_line": ("Thin line retention", "细线保留"),
+    "min_line_len": ("Min line length", "线最小长度"),
+    "high_boundary": ("High boundary threshold", "明显边界阈值"),
+    "line_color_diff": ("Line color difference", "线色差异"),
+    "reset_defaults": ("Reset defaults", "恢复默认"),
     # buttons
     "choose_image": ("Choose image…", "选择图片"),
     "generate_preview": ("Generate Preview", "生成预览"),
