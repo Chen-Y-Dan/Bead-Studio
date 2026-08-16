@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "beadstudio"
-version = "1.0.0"
+version = "1.1.0"
 description = "BeadStudio (豆趣工坊) — bead pattern design desktop app (PySide6)"
 requires-python = ">=3.10"
 license = { text = "GPL-3.0-or-later" }
