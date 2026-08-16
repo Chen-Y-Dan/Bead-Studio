@@ -69,15 +69,18 @@ app = typer.Typer(
 # Callbacks
 # ---------------------------------------------------------------------------
 
+# bead-gui adaptation: upstream reads `bead-pattern-cli` via
+# importlib.metadata, but the frozen exe ships no dist-info metadata so that
+# lookup fails inside the packaged app. The module-level `__version__`
+# constant is the reliable single source of truth here.
 def _version_callback(value: bool) -> None:
-    """Print the installed package version and exit when --version is passed."""
+    """Print the beadstudio version and exit when --version is passed."""
     if value:
         try:
-            from importlib.metadata import version
-
-            print(version("bead-pattern-cli"))
-        except Exception:
-            print("0.1.0")
+            from beadstudio import __version__
+        except Exception:  # pragma: no cover — defensive
+            __version__ = "unknown"
+        print(__version__)
         raise typer.Exit()
 
 
