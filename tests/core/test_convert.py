@@ -16,10 +16,7 @@ from PIL import Image, ImageDraw
 from beadstudio.core.convert import (
     PERLER_CODES,
     PERLER_COLORS,
-    _MEAN_EDGE_DELTAE_THRESHOLD,
     _MEAN_EDGE_MAX,
-    _MEAN_EDGE_RANGE_HIGH,
-    _MEAN_EDGE_RANGE_LOW,
     _MEAN_EDGE_REF_CELL_AREA,
     _MEAN_EDGE_SCALE_K_HIGH,
     _MEAN_EDGE_SCALE_K_LOW,
@@ -36,6 +33,7 @@ from beadstudio.core.convert import (
     srgb_to_linear,
     srgb_to_oklab,
 )
+from beadstudio.core.models import EdgeConfig
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 GOLDEN = Path(__file__).resolve().parent / "golden"
@@ -536,11 +534,14 @@ class TestSeriesRange:
     """series_range filtering in convert() (series-structured brands only)."""
 
     def test_signature_default_none_and_last(self):
-        """series_range defaults to None and is the last convert() parameter."""
+        """series_range defaults to None; edge_config is the last convert() parameter."""
         params = list(inspect.signature(convert).parameters.items())
         name, param = params[-1]
-        assert name == "series_range"
+        assert name == "edge_config"
         assert param.default is None
+        name2, param2 = params[-2]
+        assert name2 == "series_range"
+        assert param2.default is None
 
     def test_convert_series_mard_max_M(self):
         """series_range='M' → only A..M codes can be matched (no P/Q/R/T/Y/ZG)."""
@@ -738,6 +739,81 @@ class TestSourcePixelCap:
 class TestMeanCellMode:
     """Mean per-cell color extraction: linear-space mean, alpha mask, dither gate."""
 
+    def test_load_and_prepare_accepts_edge_config(self):
+        """_load_and_prepare accepts edge_config; None is identical to EdgeConfig().
+
+        The EdgeConfig-aware run must be byte-identical to the default run,
+        and an override config must be accepted (and reach the sampler).
+        """
+        grid_default, mask_default = _load_and_prepare(
+            FIXTURES / "sample_photo.png", 8, 8, cell_mode="mean",
+        )
+        grid_explicit, mask_explicit = _load_and_prepare(
+            FIXTURES / "sample_photo.png", 8, 8, cell_mode="mean",
+            edge_config=EdgeConfig(),
+        )
+        np.testing.assert_array_equal(grid_default, grid_explicit)
+        np.testing.assert_array_equal(mask_default, mask_explicit)
+
+        # An override (raised LOW/HIGH) is accepted and runs (its effect on
+        # the per-cell routing is covered by test_convert_edge_config_changes_output;
+        # at 8×8 this photo's cells are all smooth-interior so routing is
+        # unchanged here).
+        grid_raised, _ = _load_and_prepare(
+            FIXTURES / "sample_photo.png", 8, 8, cell_mode="mean",
+            edge_config=EdgeConfig(mean_edge_range_low=200, mean_edge_range_high=250),
+        )
+        assert grid_raised.shape == grid_default.shape
+
+    def test_convert_accepts_edge_config(self):
+        """convert() accepts edge_config; None defaults == explicit EdgeConfig()."""
+        r1 = convert(
+            str(FIXTURES / "sample_photo.png"), width=20, height=20, cell_mode="mean",
+        )
+        r2 = convert(
+            str(FIXTURES / "sample_photo.png"), width=20, height=20, cell_mode="mean",
+            edge_config=EdgeConfig(),
+        )
+        assert r1 == r2, "default (None) and explicit EdgeConfig() must be byte-identical"
+
+        # An explicit override (LOW raised to 200, HIGH 250 — HIGH must exceed
+        # LOW per EdgeConfig validation — and min stroke length 6) runs cleanly.
+        r3 = convert(
+            str(FIXTURES / "sample_photo.png"), width=20, height=20, cell_mode="mean",
+            edge_config=EdgeConfig(
+                mean_edge_range_low=200, mean_edge_range_high=250, stroke_min_length=6,
+            ),
+        )
+        assert r3["width"] == 20 and r3["height"] == 20
+        assert r3["colors_used"] >= 1
+
+    def test_convert_edge_config_changes_output(self, tmp_path):
+        """Raising mean_edge_range_low moves a boundary cell onto the smooth-mean path.
+
+        A 6×1 cell half (0,0,80) / half (0,0,230) has per-channel range 150:
+        above the default ``low_eff`` ≈ 115 (→ ambiguous zone → dominant, since
+        the extreme-pixel ΔE00 ≫ 15) but below the raised ``low_eff`` ≈ 200
+        (→ smooth interior → gamma-corrected linear mean ≈ (0,0,176)). So the
+        default output is the extreme color while the override is the mean —
+        proving edge_config reaches the edge-aware sampler.
+        """
+        img = Image.new("RGB", (6, 1))
+        img.putdata([(0, 0, 80)] * 3 + [(0, 0, 230)] * 3)
+        img.save(tmp_path / "edge_cfg.png")
+
+        default_grid, _ = _load_and_prepare(
+            tmp_path / "edge_cfg.png", 1, 1, cell_mode="mean",
+        )
+        raised_grid, _ = _load_and_prepare(
+            tmp_path / "edge_cfg.png", 1, 1, cell_mode="mean",
+            edge_config=EdgeConfig(mean_edge_range_low=200, mean_edge_range_high=250),
+        )
+        np.testing.assert_array_equal(default_grid[0, 0], np.array([0, 0, 80], dtype=np.uint8))
+        np.testing.assert_array_equal(raised_grid[0, 0], np.array([0, 0, 176], dtype=np.uint8))
+        assert not np.array_equal(default_grid, raised_grid), (
+            "edge thresholds did not reach the sampler"
+        )
+
     def test_mean_is_deterministic(self):
         """Two mean-mode runs produce byte-identical output."""
         r1 = convert(str(FIXTURES / "sample_photo.png"), width=20, height=20, cell_mode="mean")
@@ -867,11 +943,12 @@ class TestMeanCellMode:
         assert mask[0, 0]
         np.testing.assert_array_equal(grid[0, 0], np.array([0, 0, 128], dtype=np.uint8))
 
-    def test_mean_edge_threshold_constants(self):
-        """Pin the evidence-based edge-aware sampling constants."""
-        assert _MEAN_EDGE_RANGE_LOW == 115
-        assert _MEAN_EDGE_RANGE_HIGH == 180
-        assert _MEAN_EDGE_DELTAE_THRESHOLD == 15.0
+    def test_mean_edge_threshold_defaults(self):
+        """Pin the evidence-based edge-aware sampling defaults (EdgeConfig)."""
+        cfg = EdgeConfig()
+        assert cfg.mean_edge_range_low == 115
+        assert cfg.mean_edge_range_high == 180
+        assert cfg.mean_edge_deltae_threshold == 15.0
 
     def test_mean_edge_scale_unit(self):
         """_edge_scale(cell_area, k): power-law factor anchored at the golden ref.
@@ -913,29 +990,30 @@ class TestMeanCellMode:
         cell_area≈6.06=REF) stays at scale=1.0 → output byte-identical.
         """
         # Big grid: 128×128 source at 128×128 grid → cell_area = 1.0.
+        _edge_cfg = EdgeConfig()
         big_low = min(
-            _MEAN_EDGE_RANGE_LOW * _edge_scale(1.0, _MEAN_EDGE_SCALE_K_LOW),
+            _edge_cfg.mean_edge_range_low * _edge_scale(1.0, _MEAN_EDGE_SCALE_K_LOW),
             _MEAN_EDGE_MAX,
         )
         big_high = min(
-            _MEAN_EDGE_RANGE_HIGH * _edge_scale(1.0, _MEAN_EDGE_SCALE_K_HIGH),
+            _edge_cfg.mean_edge_range_high * _edge_scale(1.0, _MEAN_EDGE_SCALE_K_HIGH),
             _MEAN_EDGE_MAX,
         )
-        assert big_low < _MEAN_EDGE_RANGE_LOW
-        assert big_high < _MEAN_EDGE_RANGE_HIGH
+        assert big_low < _edge_cfg.mean_edge_range_low
+        assert big_high < _edge_cfg.mean_edge_range_high
         assert big_low < big_high
 
         # Small grid: 100×100 source at 10×10 grid → cell_area = 100.0.
         small_low = min(
-            _MEAN_EDGE_RANGE_LOW * _edge_scale(100.0, _MEAN_EDGE_SCALE_K_LOW),
+            _edge_cfg.mean_edge_range_low * _edge_scale(100.0, _MEAN_EDGE_SCALE_K_LOW),
             _MEAN_EDGE_MAX,
         )
         small_high = min(
-            _MEAN_EDGE_RANGE_HIGH * _edge_scale(100.0, _MEAN_EDGE_SCALE_K_HIGH),
+            _edge_cfg.mean_edge_range_high * _edge_scale(100.0, _MEAN_EDGE_SCALE_K_HIGH),
             _MEAN_EDGE_MAX,
         )
-        assert small_low > _MEAN_EDGE_RANGE_LOW
-        assert small_high > _MEAN_EDGE_RANGE_HIGH
+        assert small_low > _edge_cfg.mean_edge_range_low
+        assert small_high > _edge_cfg.mean_edge_range_high
         assert small_low < small_high
 
         # Golden anchor: (128/52)² = 6.059 ≈ REF → scale ≈ 1.0 (both exponents).
@@ -1098,11 +1176,16 @@ class TestMeanCellMode:
         )
 
         import beadstudio.core.convert as convert_mod
-        for name in ("_STROKE_MIN_FRACTION", "_STROKE_MIN_DELTAE",
-                     "_STROKE_MIN_LENGTH", "_STROKE_LINE_DELTAE"):
-            monkeypatch.setattr(convert_mod, name, 10 ** 9)  # disable stroke pass
+        # The stroke gates now live in EdgeConfig, so "disable the stroke
+        # pass" = an EdgeConfig override with every gate maxed; the internal
+        # _STROKE_LINE_DELTAE stays a module-level constant.
+        monkeypatch.setattr(convert_mod, "_STROKE_LINE_DELTAE", 10 ** 9)
         out_no_stroke, _ = _load_and_prepare(
             tmp_path / "thin_line.png", 33, 33, cell_mode="mean",
+            edge_config=EdgeConfig(
+                stroke_min_fraction=1.0, stroke_min_deltae=50.0,
+                stroke_min_length=10 ** 9,
+            ),
         )
         assert not np.any(np.all(out_no_stroke == 255, axis=2)), (
             "without the stroke pass the 1-px line should be swallowed"
@@ -1151,11 +1234,14 @@ class TestMeanCellMode:
         out, _ = _load_and_prepare(tmp_path / "grad.png", 33, 33, cell_mode="mean")
 
         import beadstudio.core.convert as convert_mod
-        for name in ("_STROKE_MIN_FRACTION", "_STROKE_MIN_DELTAE",
-                     "_STROKE_MIN_LENGTH", "_STROKE_LINE_DELTAE"):
-            monkeypatch.setattr(convert_mod, name, 10 ** 9)  # disable stroke pass
+        # Stroke gates live in EdgeConfig → disable the pass via an override.
+        monkeypatch.setattr(convert_mod, "_STROKE_LINE_DELTAE", 10 ** 9)
         out_disabled, _ = _load_and_prepare(
             tmp_path / "grad.png", 33, 33, cell_mode="mean",
+            edge_config=EdgeConfig(
+                stroke_min_fraction=1.0, stroke_min_deltae=50.0,
+                stroke_min_length=10 ** 9,
+            ),
         )
         np.testing.assert_array_equal(out, out_disabled)
 
@@ -1265,13 +1351,13 @@ class TestMeanCellMode:
         cell = arr[0:8, 504:512]  # grid cell (0, 63), which contains x=510,511
         _, _, single_frac = convert_mod._top2_colors(cell.astype(np.uint8))
         dom, sec, _, cluster_frac = convert_mod._top_clusters(cell.astype(np.uint8))
-        assert single_frac < convert_mod._STROKE_MIN_FRACTION, (
+        assert single_frac < EdgeConfig().stroke_min_fraction, (
             "synthetic setup broken: a single shade already passes the gate"
         )
-        assert cluster_frac >= convert_mod._STROKE_MIN_FRACTION, (
+        assert cluster_frac >= EdgeConfig().stroke_min_fraction, (
             "cluster fraction failed to aggregate the near-white shades"
         )
-        assert convert_mod._deltae00_between(dom, sec) >= convert_mod._STROKE_MIN_DELTAE
+        assert convert_mod._deltae00_between(dom, sec) >= EdgeConfig().stroke_min_deltae
 
         # END-TO-END: the full line column is repainted with the chain's line
         # color (a near-white shade), so every row keeps its white cell.
@@ -1343,7 +1429,7 @@ class TestMeanCellMode:
         _dom, _sec, _dom_frac, sec12 = convert_mod._top_clusters(
             cell.astype(np.uint8), top_n=12
         )
-        assert sec12 < convert_mod._STROKE_MIN_FRACTION, (
+        assert sec12 < EdgeConfig().stroke_min_fraction, (
             "test premise broken: top-12 truncation already passes the gate "
             f"(second fraction {sec12:.3f})"
         )
@@ -1353,10 +1439,10 @@ class TestMeanCellMode:
         dom, sec, _dom_frac, sec_all = convert_mod._top_clusters(
             cell.astype(np.uint8)
         )
-        assert sec_all >= convert_mod._STROKE_MIN_FRACTION, (
+        assert sec_all >= EdgeConfig().stroke_min_fraction, (
             f"greedy clustering lost the white population: {sec_all:.3f}"
         )
-        assert convert_mod._deltae00_between(dom, sec) >= convert_mod._STROKE_MIN_DELTAE
+        assert convert_mod._deltae00_between(dom, sec) >= EdgeConfig().stroke_min_deltae
 
         # END-TO-END: the line column is traced and repainted with the chain's
         # line color, so >= 95% of the rows keep a near-white cell in one
@@ -1409,10 +1495,10 @@ class TestMeanCellMode:
             cell_area / convert_mod._MEAN_EDGE_REF_CELL_AREA
         ) ** convert_mod._MEAN_EDGE_SCALE_K_HIGH
         low_eff = min(
-            convert_mod._MEAN_EDGE_RANGE_LOW * scale_low, convert_mod._MEAN_EDGE_MAX,
+            EdgeConfig().mean_edge_range_low * scale_low, convert_mod._MEAN_EDGE_MAX,
         )
         high_eff = min(
-            convert_mod._MEAN_EDGE_RANGE_HIGH * scale_high, convert_mod._MEAN_EDGE_MAX,
+            EdgeConfig().mean_edge_range_high * scale_high, convert_mod._MEAN_EDGE_MAX,
         )
         assert 225 > low_eff, (
             "test premise broken: line cells are back in the smooth branch "
@@ -1430,11 +1516,14 @@ class TestMeanCellMode:
 
         out, _ = _load_and_prepare(tmp_path / "smooth_line.png", 30, 61, cell_mode="mean")
 
-        for name in ("_STROKE_MIN_FRACTION", "_STROKE_MIN_DELTAE",
-                     "_STROKE_MIN_LENGTH", "_STROKE_LINE_DELTAE"):
-            monkeypatch.setattr(convert_mod, name, 10 ** 9)  # disable stroke pass
+        # Stroke gates live in EdgeConfig → disable the pass via an override.
+        monkeypatch.setattr(convert_mod, "_STROKE_LINE_DELTAE", 10 ** 9)
         out_disabled, _ = _load_and_prepare(
             tmp_path / "smooth_line.png", 30, 61, cell_mode="mean",
+            edge_config=EdgeConfig(
+                stroke_min_fraction=1.0, stroke_min_deltae=50.0,
+                stroke_min_length=10 ** 9,
+            ),
         )
         repainted = int(np.count_nonzero(np.any(out != out_disabled, axis=2)))
         assert repainted >= 45, (
@@ -1516,7 +1605,7 @@ class TestMeanCellMode:
         # excludes all of them (0 candidates → 0 repaints).
         cell_h, cell_w = h / 23.0, w / 30.0
         low_eff = min(
-            convert_mod._MEAN_EDGE_RANGE_LOW
+            EdgeConfig().mean_edge_range_low
             * (cell_h * cell_w / convert_mod._MEAN_EDGE_REF_CELL_AREA)
             ** convert_mod._MEAN_EDGE_SCALE_K_LOW,
             convert_mod._MEAN_EDGE_MAX,
@@ -1534,8 +1623,8 @@ class TestMeanCellMode:
                     continue
                 dom, sec, _df, second_frac = convert_mod._top_clusters(reg)
                 if (
-                    second_frac >= convert_mod._STROKE_MIN_FRACTION
-                    and convert_mod._deltae00_between(dom, sec) >= convert_mod._STROKE_MIN_DELTAE
+                    second_frac >= EdgeConfig().stroke_min_fraction
+                    and convert_mod._deltae00_between(dom, sec) >= EdgeConfig().stroke_min_deltae
                 ):
                     old_gate_cells += 1
         assert old_gate_cells >= 5, (
@@ -1549,11 +1638,14 @@ class TestMeanCellMode:
         )
 
         out, _ = _load_and_prepare(tmp_path / "photo_texture.png", 30, 23, cell_mode="mean")
-        for name in ("_STROKE_MIN_FRACTION", "_STROKE_MIN_DELTAE",
-                     "_STROKE_MIN_LENGTH", "_STROKE_LINE_DELTAE"):
-            monkeypatch.setattr(convert_mod, name, 10 ** 9)  # disable stroke pass
+        # Stroke gates live in EdgeConfig → disable the pass via an override.
+        monkeypatch.setattr(convert_mod, "_STROKE_LINE_DELTAE", 10 ** 9)
         out_disabled, _ = _load_and_prepare(
             tmp_path / "photo_texture.png", 30, 23, cell_mode="mean",
+            edge_config=EdgeConfig(
+                stroke_min_fraction=1.0, stroke_min_deltae=50.0,
+                stroke_min_length=10 ** 9,
+            ),
         )
         repainted = int(np.count_nonzero(np.any(out != out_disabled, axis=2)))
         budget = int(30 * 23 * 0.05)
@@ -1634,12 +1726,15 @@ class TestMeanCellMode:
 
         # Without the stroke pass the 1-px line is swallowed (its boundary
         # cells output the dominant white), so the black column above can only
-        # come from the fallback repaint.
-        for name in ("_STROKE_MIN_FRACTION", "_STROKE_MIN_DELTAE",
-                     "_STROKE_MIN_LENGTH", "_STROKE_LINE_DELTAE"):
-            monkeypatch.setattr(convert_mod, name, 10 ** 9)
+        # come from the fallback repaint. Stroke gates live in EdgeConfig →
+        # disable the pass via an override.
+        monkeypatch.setattr(convert_mod, "_STROKE_LINE_DELTAE", 10 ** 9)
         out_disabled, _ = _load_and_prepare(
             tmp_path / "black_line.png", grid, grid, cell_mode="mean",
+            edge_config=EdgeConfig(
+                stroke_min_fraction=1.0, stroke_min_deltae=50.0,
+                stroke_min_length=10 ** 9,
+            ),
         )
         assert not np.any(np.all(out_disabled <= 40, axis=2)), (
             "black column appears even without the stroke pass — "

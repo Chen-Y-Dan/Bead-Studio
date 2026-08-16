@@ -247,12 +247,14 @@ def _build_palette_lookup(
 def _resolve_grid(
     grid: Union[Dict[str, Any], List[List[Optional[str]]]],
 ) -> Tuple[int, int, List[List[Optional[str]]], List[Dict[str, Any]]]:
-    """Accept either a ``convert()`` result dict or a raw ``codes`` 2D list.
+    """Accept either a ``convert()`` result (dict or ``Pattern``) or a raw
+    ``codes`` 2D list.
 
     Returns ``(width, height, codes, legend)``, computing ``legend`` from
     scratch if the input was a raw list.
     """
-    if isinstance(grid, dict):
+    if isinstance(grid, dict) or hasattr(grid, "keys"):
+        # dict, or Pattern via its TEMPORARY dict-compat layer.
         codes: List[List[Optional[str]]] = list(grid["codes"])
         w: int = grid["width"]
         h: int = grid["height"]
@@ -814,7 +816,7 @@ def export_png(
             )
 
         # Top info bar with size / bead count / time & cost estimate
-        if isinstance(grid, dict) and "empty_count" in grid:
+        if hasattr(grid, "keys") and "empty_count" in grid:
             beads = width * height - int(grid["empty_count"])
         else:
             beads = sum(1 for row in codes for c in row if c is not None)
