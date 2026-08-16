@@ -73,19 +73,15 @@ network needed — all palette data ships with the app.
 
 ## 截图 / Screenshots
 
-**中文**：截图占位 —— 发布时请将主窗口截图放入 `docs/screenshots/`，例如
-`docs/screenshots/main.png`，并在下方替换为实际图片。
+**中文**：主窗口（带拼豆图案预览）与空状态界面。以下均为应用真实渲染的截图
+（深色主题）。
 
-**English**：Placeholder — before release, drop screenshots of the main
-window into `docs/screenshots/`, e.g. `docs/screenshots/main.png`, and
-replace the image below.
+**English**：Main window (with a rendered bead pattern preview) and the empty
+state. Both are real renders of the app (dark theme).
 
-> TODO(W5): 替换为真实截图 / Replace with real screenshots.
+<img src="docs/screenshots/main.png" alt="BeadStudio 主窗口 / main window" width="720" />
 
-```
-docs/screenshots/main.png      # 主窗口 / main window
-docs/screenshots/export.png    # 导出结果 / exported PDF+CSV
-```
+<img src="docs/screenshots/empty.png" alt="BeadStudio 空状态 / empty state" width="720" />
 
 ---
 
