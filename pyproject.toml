@@ -26,9 +26,8 @@ classifiers = [
 ]
 
 [project.urls]
-# TODO(W5): fill in the real repository URL after the GitHub repo is created.
-Homepage = "https://github.com/<your-user>/bead-gui"
-Repository = "https://github.com/<your-user>/bead-gui"
+Homepage = "https://github.com/Chen-Y-Dan/Bead-Studio"
+Repository = "https://github.com/Chen-Y-Dan/Bead-Studio"
 "Bug Tracker" = "https://github.com/<your-user>/bead-gui/issues"
 
 [tool.pytest.ini_options]
