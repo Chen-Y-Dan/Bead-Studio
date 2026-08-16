@@ -79,10 +79,6 @@ network needed — all palette data ships with the app.
 **English**：Main window (with a rendered bead pattern preview) and the empty
 state. Both are real renders of the app (dark theme).
 
-<img src="docs/screenshots/main.png" alt="BeadStudio 主窗口 / main window" width="720" />
-
-<img src="docs/screenshots/empty.png" alt="BeadStudio 空状态 / empty state" width="720" />
-
 ---
 
 ## 下载 / Download
