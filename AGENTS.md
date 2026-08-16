@@ -15,7 +15,7 @@ beadstudio/
 │   ├── estimate.py   # time/cost estimation
 │   └── export.py     # PNG / CSV / PDF export
 ├── assets/           # app_icon.ico, app_icon_512.png
-├── tests/            # pytest, 31 tests (smoke, bg preview, exports, i18n)
+├── tests/            # pytest, 51 tests (smoke, bg preview, exports, i18n)
 ├── scripts/build_exe.ps1  # PyInstaller onefile build → dist\BeadStudio.exe
 ├── LICENSE           # GPL-3.0
 ├── NOTICE            # third-party attribution (engine MIT, palettes, Qt)
@@ -23,13 +23,14 @@ beadstudio/
 └── pyproject.toml    # name=beadstudio, version=1.0.0, setuptools
 ```
 
-## Commands (conda env `beadGUI`, python at D:\Spyder\envs\beadGUI\python.exe)
+## Commands (conda env `beadGUI`)
 
 ```powershell
 # tests
-conda run -n beadGUI python -m pytest tests/ -q          # 31 passed
+conda run -n beadGUI python -m pytest tests/ -q          # 51 passed
 # or directly (conda run can deadlock on this machine with big output):
-& 'D:\Spyder\envs\beadGUI\python.exe' -m pytest tests/ -q
+# use the env's python directly, e.g.:
+python -m pytest tests/ -q
 
 # run GUI
 conda run -n beadGUI python -m beadstudio
@@ -46,7 +47,7 @@ powershell -ExecutionPolicy Bypass -File scripts\build_exe.ps1
 ## Copy rule (CRITICAL)
 
 `beadstudio/core/` is a **copy of the bead-pattern-cli engine**
-(E:\bead-pattern-cli, MIT). All imports from the app must be
+(upstream bead-pattern-cli engine, MIT). All imports from the app must be
 `beadstudio.core.*`. Do NOT diverge the core locally without syncing
 upstream first; keep the copy in sync with upstream, and never edit core
 files for UI-only reasons (work around in `beadstudio/ui/` or `app.py`).
@@ -73,4 +74,4 @@ follows system locale (`zh*` → Chinese, else English), overridable with
 
 - Commit `dist/`, `build/`, `*.spec`, `__pycache__/`, `.omo/`,
   `.pytest_cache/`, `.venv*/` (all in .gitignore).
-- Modify E:\bead-pattern-cli from this repo's work.
+- Modify the upstream bead-pattern-cli repo from this repo's work.

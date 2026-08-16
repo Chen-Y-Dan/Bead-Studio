@@ -10,12 +10,12 @@ requires-python = ">=3.10"
 license = { text = "GPL-3.0-or-later" }
 readme = "README.md"
 dependencies = [
-    "PySide6",
-    "Pillow",
-    "numpy",
-    "colour-science",
-    "reportlab",
-    "typer",
+    "PySide6>=6.5",
+    "Pillow>=10.0",
+    "numpy>=1.26",
+    "colour-science>=0.4.4",
+    "reportlab>=4.0",
+    "typer>=0.12",
 ]
 
 classifiers = [
@@ -25,17 +25,26 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 
+[project.optional-dependencies]
+bgremove = [
+    "rembg>=2.0",
+    "onnxruntime>=1.16",
+]
+dev = [
+    "pytest>=8",
+]
+
 [project.urls]
 Homepage = "https://github.com/Chen-Y-Dan/Bead-Studio"
 Repository = "https://github.com/Chen-Y-Dan/Bead-Studio"
-"Bug Tracker" = "https://github.com/<your-user>/bead-gui/issues"
+"Bug Tracker" = "https://github.com/Chen-Y-Dan/Bead-Studio/issues"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
 
-[tool.setuptools]
-packages = ["beadstudio", "beadstudio.core"]
+[tool.setuptools.packages.find]
+include = ["beadstudio*"]
 
 [tool.setuptools.package-data]
 "beadstudio.core" = ["data/palettes/*.json"]
