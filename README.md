@@ -306,6 +306,14 @@ would not exist without them:
 
 - **拷贝规则**：`beadstudio/core/` 是 bead-pattern-cli 引擎的拷贝，只允许
   从上游单向同步，不得在本地私自分叉；改动前先同步上游。
+- **AI 辅助开发（Vibe Coding）**：本项目通过 AI 编码代理开发——
+  - **工具链**：`opencode` CLI + `oh-my-openagent`（OhMyOpenCode）插件，采用
+    编排者（Sisyphus / Atlas）委派子代理的协作模式
+  - **模型配置**：主模型与全部子代理统一使用 **DeepSeek `deepseek-v4-flash`**
+    （DeepSeek API，`https://api.deepseek.com/v1`），无按任务混用模型
+  - **工作方式**：规划文档（`.omo/plans/`）→ 子代理并行实施 → 每步独立测试验证
+    → 小步提交；核心算法改动先在上游 `bead-pattern-cli` 验证（golden 字节不变
+    + 310 测试），再同步到本仓库
 
 **English**
 
@@ -319,6 +327,18 @@ would not exist without them:
 - **Copy rule**: `beadstudio/core/` is a copy of the bead-pattern-cli
   engine — sync one-way from upstream only, never fork locally; sync before
   modifying (see AGENTS.md).
+- **AI-assisted development (Vibe Coding)**: this project is built with AI
+  coding agents —
+  - **Toolchain**: `opencode` CLI with the `oh-my-openagent` plugin
+    (OhMyOpenCode), using an orchestrator (Sisyphus / Atlas) that delegates
+    to sub-agents
+  - **Model setup**: the main model and every sub-agent run **DeepSeek
+    `deepseek-v4-flash`** (DeepSeek API, `https://api.deepseek.com/v1`) — a
+    single model across all tasks, no per-task model mixing
+  - **Workflow**: plan docs (`.omo/plans/`) → parallel sub-agent
+    implementation → per-step test verification → small atomic commits; core
+    algorithm changes land in upstream `bead-pattern-cli` first (golden
+    byte-identical + 310 tests), then sync into this repo
 
 ---
 
