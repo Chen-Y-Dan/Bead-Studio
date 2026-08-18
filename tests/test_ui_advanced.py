@@ -190,7 +190,7 @@ def test_convert_accepts_edge_config_end_to_end(tmp_path, qapp):
     window.settings.advanced_sliders["smoothness"].setValue(140)
     window._convert()  # must not raise
     assert window._last_result is not None
-    assert window._last_result["width"] == 16
+    assert window._last_result.width == 16
     assert not window.preview.image().isNull()
 
     # All defaults → edge_config=None → engine default path, still fine.

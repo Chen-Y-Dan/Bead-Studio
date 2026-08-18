@@ -749,10 +749,7 @@ def convert(
     :return: A typed :class:`~beadstudio.core.models.Pattern` with fields
         ``codes`` (grid of bead codes), ``indices`` (grid of palette
         indices, -1 for empty), ``width``, ``height``, ``empty_count``,
-        ``colors_used``, ``legend``, ``grid_rgb``, ``active_mask``. The
-        Pattern carries a TEMPORARY dict-compat layer (``__getitem__``/
-        ``keys``/``get``/``__contains__``) so legacy callers using
-        ``result["x"]`` keep working; it will be removed in a future version.
+        ``colors_used``, ``legend``, ``grid_rgb``, ``active_mask``.
     :rtype: Pattern
     :raises ValueError: If parameters are invalid (neither dimension given,
         non-positive dimensions, unsupported color space, non-positive max_colors).

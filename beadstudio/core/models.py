@@ -1,14 +1,10 @@
 """Typed domain models for the bead engine.
 
-Transition note: ``Pattern`` is introduced as the typed return of
-``convert()`` replacing ``Dict[str, Any]``. It carries a thin dict-compat
-layer (``__getitem__``/``keys``) so existing callers using ``result["x"]``
-keep working during the migration; this layer is TEMPORARY and will be
-removed in a future version.
+``Pattern`` is the typed return of ``convert()`` replacing ``Dict[str, Any]``.
 """
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 
@@ -81,10 +77,6 @@ class Pattern:
     ``frozen=True`` prevents field re-binding (``pattern.width = x`` fails),
     but ``grid_rgb``/``active_mask`` are numpy arrays and remain mutable
     in place — this is NOT deep immutability.
-
-    The ``__getitem__``/``keys``/``get``/``__contains__`` layer is a
-    TEMPORARY dict-compat shim for the migration off ``Dict[str, Any]``;
-    it will be removed.
     """
     codes: Tuple[Tuple[Optional[str], ...], ...]
     indices: Tuple[Tuple[int, ...], ...]
@@ -95,20 +87,6 @@ class Pattern:
     legend: Tuple[Dict[str, Any], ...]
     grid_rgb: np.ndarray
     active_mask: np.ndarray
-
-    # -- TEMPORARY dict-compat layer (migration only) ---------------------
-    def __getitem__(self, key: str) -> Any:
-        return getattr(self, key)
-
-    def keys(self) -> Sequence[str]:
-        return ("codes", "indices", "width", "height", "empty_count",
-                "colors_used", "legend", "grid_rgb", "active_mask")
-
-    def get(self, key: str, default: Any = None) -> Any:
-        return getattr(self, key, default)
-
-    def __contains__(self, key: object) -> bool:
-        return key in self.keys()
 
     def __eq__(self, other: object) -> bool:
         """Field-wise equality with numpy-array-aware comparison.
@@ -121,7 +99,7 @@ class Pattern:
         """
         if not isinstance(other, Pattern):
             return NotImplemented
-        for name in self.keys():
+        for name in _PATTERN_FIELDS:
             left = getattr(self, name)
             right = getattr(other, name)
             if isinstance(left, np.ndarray):
@@ -130,3 +108,10 @@ class Pattern:
             elif left != right:
                 return False
         return True
+
+
+# Field names of ``Pattern`` (shared by ``__eq__``).
+_PATTERN_FIELDS = (
+    "codes", "indices", "width", "height", "empty_count",
+    "colors_used", "legend", "grid_rgb", "active_mask",
+)

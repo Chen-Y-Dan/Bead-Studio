@@ -58,7 +58,7 @@ def test_export_flow_pdf_and_csv(tmp_path, qapp):
     window._convert()
 
     assert window._last_result is not None
-    assert window._last_result["width"] == 16
+    assert window._last_result.width == 16
 
     pdf = out_dir / "red_pattern.pdf"
     csv = out_dir / "red_shopping.csv"

@@ -82,24 +82,8 @@ def test_edge_config_as_dict():
 
 
 # ---------------------------------------------------------------------------
-# Pattern: dict-compat shim + frozen semantics
+# Pattern: frozen semantics
 # ---------------------------------------------------------------------------
-
-def test_pattern_dict_compat():
-    """Pattern behaves like a dict for the migration shim."""
-    p = _make_pattern()
-    assert p["codes"] == p.codes
-    assert p["legend"] == p.legend
-    assert list(p.keys()) == [
-        "codes", "indices", "width", "height", "empty_count",
-        "colors_used", "legend", "grid_rgb", "active_mask",
-    ]
-    assert len(list(p.keys())) == 9
-    assert dict(p)["width"] == p.width
-    assert {**p}["colors_used"] == p.colors_used
-    assert p.get("empty_count") == p.empty_count
-    # Missing-key fallback via get().
-    assert p.get("no_such_key", "fallback") == "fallback"
 
 
 def test_pattern_frozen_rejects_rebind():

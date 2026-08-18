@@ -11,6 +11,7 @@ from PIL import Image
 
 from beadstudio.core.convert import PERLER_COLORS, convert
 from beadstudio.core.estimate import estimate_time
+from beadstudio.core.models import Pattern
 from beadstudio.core.export import (
     _INFO_BAR_H,
     _INDEX_MARGIN,
@@ -51,8 +52,8 @@ def _empty_grid() -> List[List[Optional[str]]]:
     return [[None] * 3 for _ in range(3)]
 
 
-def _grid_from_convert(**kw) -> Dict[str, Any]:
-    """Run convert() on sample_photo.png and return the result dict."""
+def _grid_from_convert(**kw) -> Pattern:
+    """Run convert() on sample_photo.png and return the Pattern."""
     return convert(
         str(FIXTURES / "sample_photo.png"),
         width=kw.pop("width", 16),
@@ -69,15 +70,15 @@ def _grid_from_convert(**kw) -> Dict[str, Any]:
 class TestResolveGrid:
     """Verify the input-normalisation helper."""
 
-    def test_dict_input(self):
-        """Passing a convert() result dict extracts width/height/codes/legend."""
+    def test_pattern_input(self):
+        """Passing a convert() Pattern extracts width/height/codes/legend."""
         result = _grid_from_convert(width=10, height=10)
         w, h, codes, legend = _resolve_grid(result)
         assert w == 10
         assert h == 10
         assert len(codes) == 10
         assert all(len(row) == 10 for row in codes)
-        assert len(legend) == result["colors_used"]
+        assert len(legend) == result.colors_used
 
     def test_list_input(self):
         """Passing a raw 2D list computes width/height and legend."""
@@ -472,14 +473,14 @@ class TestShoppingListCsv:
             assert row["name"] != "", f"Name should not be empty for {row['code']}"
 
     def test_convert_result_as_input(self):
-        """CSV works when given the full convert() result dict."""
+        """CSV works when given the full convert() Pattern."""
         result = _grid_from_convert(width=10, height=10)
         csv_str = shopping_list_csv(result)
         rows = list(csv.DictReader(io.StringIO(csv_str)))
         # Should have some rows
         assert len(rows) > 0
         total = sum(int(row["count"]) for row in rows)
-        non_empty = (result["width"] * result["height"]) - result["empty_count"]
+        non_empty = (result.width * result.height) - result.empty_count
         assert total == non_empty
 
     def test_shopping_csv_formula_injection_sanitized(self):
@@ -593,7 +594,7 @@ class TestIntegration:
         # Verify non-empty count matches
         reader = csv.DictReader(io.StringIO(csv_str))
         total = sum(int(row["count"]) for row in reader)
-        non_empty = (10 * 10) - result["empty_count"]
+        non_empty = (10 * 10) - result.empty_count
         assert total == non_empty
 
     def test_convert_then_shopping_list_png(self):
@@ -607,7 +608,7 @@ class TestIntegration:
         result = _grid_from_convert(width=10, height=10)
 
         # Count from legend (which is authoritative)
-        legend_total = sum(e["count"] for e in result["legend"])
+        legend_total = sum(e["count"] for e in result.legend)
 
         # Count from CSV
         csv_str = shopping_list_csv(result)
@@ -617,7 +618,7 @@ class TestIntegration:
         )
 
         # Verify non-empty cells from grid
-        non_empty = (10 * 10) - result["empty_count"]
+        non_empty = (10 * 10) - result.empty_count
         assert legend_total == non_empty
         assert csv_total == non_empty
 

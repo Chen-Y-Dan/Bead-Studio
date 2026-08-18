@@ -33,7 +33,7 @@ from beadstudio.core.convert import (
     srgb_to_linear,
     srgb_to_oklab,
 )
-from beadstudio.core.models import EdgeConfig
+from beadstudio.core.models import EdgeConfig, Pattern
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 GOLDEN = Path(__file__).resolve().parent / "golden"
@@ -43,16 +43,16 @@ GOLDEN = Path(__file__).resolve().parent / "golden"
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _render_to_png(result: dict, scale: int = 16) -> bytes:
+def _render_to_png(result: Pattern, scale: int = 16) -> bytes:
     """Render conversion result to PNG bytes (for byte-identity comparison)."""
-    w, h = result["width"], result["height"]
+    w, h = result.width, result.height
     canvas = Image.new("RGB", (w * scale, h * scale), "white")
     draw = ImageDraw.Draw(canvas)
     perler_map = dict(PERLER_COLORS)
 
     for y in range(h):
         for x in range(w):
-            code = result["codes"][y][x]
+            code = result.codes[y][x]
             left, top = x * scale, y * scale
             box = (left, top, left + scale, top + scale)
             if code:
@@ -255,17 +255,12 @@ class TestConvertPipeline:
             width=20, height=20,
             color_space="cie2000",
         )
-        assert result["width"] == 20
-        assert result["height"] == 20
-        assert "codes" in result
-        assert "indices" in result
-        assert "legend" in result
-        assert "empty_count" in result
-        assert "colors_used" in result
-        assert result["colors_used"] > 0
-        assert len(result["codes"]) == 20
-        assert all(len(row) == 20 for row in result["codes"])
-        assert all(isinstance(c, (str, type(None))) for row in result["codes"] for c in row)
+        assert result.width == 20
+        assert result.height == 20
+        assert result.colors_used > 0
+        assert len(result.codes) == 20
+        assert all(len(row) == 20 for row in result.codes)
+        assert all(isinstance(c, (str, type(None))) for row in result.codes for c in row)
 
     def test_pixel_art_conversion(self):
         """sample_pixel_art.png should convert cleanly."""
@@ -274,9 +269,9 @@ class TestConvertPipeline:
             width=16, height=16,
             color_space="oklab",
         )
-        assert result["width"] == 16
-        assert result["height"] == 16
-        assert result["colors_used"] > 0
+        assert result.width == 16
+        assert result.height == 16
+        assert result.colors_used > 0
 
     def test_alpha_transparency(self):
         """RGBA image with transparency should produce empty pegs."""
@@ -286,8 +281,8 @@ class TestConvertPipeline:
             alpha_threshold=128,
         )
         # sample_alpha.png has transparent regions → should have empty pegs
-        assert result["empty_count"] > 0, (
-            f"Expected empty pegs for transparent regions, got {result['empty_count']}"
+        assert result.empty_count > 0, (
+            f"Expected empty pegs for transparent regions, got {result.empty_count}"
         )
 
     def test_height_derived_from_aspect_ratio(self, tmp_path):
@@ -296,8 +291,8 @@ class TestConvertPipeline:
         img = Image.new("RGB", (200, 100), (120, 60, 30))
         img.save(tmp_path / "wide.png")
         result = convert(str(tmp_path / "wide.png"), width=20)
-        assert result["width"] == 20
-        assert result["height"] == 10
+        assert result.width == 20
+        assert result.height == 10
 
     def test_width_derived_from_aspect_ratio(self, tmp_path):
         """When width is None, derive it from the source image's aspect ratio."""
@@ -305,8 +300,8 @@ class TestConvertPipeline:
         img = Image.new("RGB", (200, 100), (120, 60, 30))
         img.save(tmp_path / "wide.png")
         result = convert(str(tmp_path / "wide.png"), height=20)
-        assert result["width"] == 40
-        assert result["height"] == 20
+        assert result.width == 40
+        assert result.height == 20
 
     def test_derived_dimension_rounded_and_min_one(self, tmp_path):
         """Derived dimension rounds to nearest bead, never below 1."""
@@ -314,20 +309,20 @@ class TestConvertPipeline:
         img = Image.new("RGB", (999, 750), (120, 60, 30))
         img.save(tmp_path / "photo.png")
         result = convert(str(tmp_path / "photo.png"), width=52)
-        assert result["height"] == 39
+        assert result.height == 39
         # Extreme aspect: 100×1 source → width=1 → height must be ≥ 1.
         img2 = Image.new("RGB", (100, 1), (120, 60, 30))
         img2.save(tmp_path / "strip.png")
         result2 = convert(str(tmp_path / "strip.png"), width=1)
-        assert result2["height"] >= 1
+        assert result2.height >= 1
 
     def test_explicit_both_dimensions_kept(self, tmp_path):
         """When both dimensions are given, they are used as-is."""
         img = Image.new("RGB", (200, 100), (120, 60, 30))
         img.save(tmp_path / "wide.png")
         result = convert(str(tmp_path / "wide.png"), width=20, height=13)
-        assert result["width"] == 20
-        assert result["height"] == 13
+        assert result.width == 20
+        assert result.height == 13
 
     def test_square_source_still_square(self):
         """A square source with only width still gives a square grid."""
@@ -335,8 +330,8 @@ class TestConvertPipeline:
             str(FIXTURES / "sample_photo.png"),
             width=10,
         )
-        assert result["width"] == 10
-        assert result["height"] == 10
+        assert result.width == 10
+        assert result.height == 10
 
     def test_with_dither(self):
         """Dithering should produce a valid result."""
@@ -345,8 +340,8 @@ class TestConvertPipeline:
             width=10, height=10,
             dither=True,
         )
-        assert result["width"] == 10
-        assert result["colors_used"] > 0
+        assert result.width == 10
+        assert result.colors_used > 0
 
     def test_no_cleanup(self):
         """cleanup=False should still produce valid output."""
@@ -355,7 +350,7 @@ class TestConvertPipeline:
             width=10, height=10,
             cleanup=False,
         )
-        assert result["colors_used"] > 0
+        assert result.colors_used > 0
 
     def test_hama_brand_conversion(self):
         """Non-perler brand (hama) must convert successfully."""
@@ -364,11 +359,11 @@ class TestConvertPipeline:
             width=20, height=20,
             brand="hama",
         )
-        assert result["width"] == 20
-        assert result["height"] == 20
-        assert result["colors_used"] > 0
+        assert result.width == 20
+        assert result.height == 20
+        assert result.colors_used > 0
         # Verify codes are Hama-style (H01, H02, ...) not Perler (80-xxxxx)
-        for row in result["codes"]:
+        for row in result.codes:
             for code in row:
                 if code is not None:
                     assert isinstance(code, str)
@@ -469,9 +464,9 @@ class TestMaxColors:
         """max_colors=None must be byte-identical to the old pipeline."""
         baseline = convert(str(FIXTURES / "sample_photo.png"), width=20, height=20)
         limited = convert(str(FIXTURES / "sample_photo.png"), width=20, height=20, max_colors=None)
-        assert limited["codes"] == baseline["codes"]
-        assert limited["indices"] == baseline["indices"]
-        assert limited["colors_used"] == baseline["colors_used"]
+        assert limited.codes == baseline.codes
+        assert limited.indices == baseline.indices
+        assert limited.colors_used == baseline.colors_used
 
     def test_limits_colors_used(self):
         """max_colors=N → at most N distinct bead colors in the pattern."""
@@ -480,18 +475,18 @@ class TestMaxColors:
             width=20, height=20,
             max_colors=6,
         )
-        assert 0 < result["colors_used"] <= 6
-        assert len(result["legend"]) == result["colors_used"]
+        assert 0 < result.colors_used <= 6
+        assert len(result.legend) == result.colors_used
         # Every code in the grid appears in the legend.
-        used_codes = {c for row in result["codes"] for c in row if c}
-        assert used_codes == {entry["code"] for entry in result["legend"]}
+        used_codes = {c for row in result.codes for c in row if c}
+        assert used_codes == {entry["code"] for entry in result.legend}
 
     def test_high_limit_has_no_effect(self):
         """max_colors ≥ number of matched colors → unchanged."""
         baseline = convert(str(FIXTURES / "sample_photo.png"), width=20, height=20)
         limited = convert(str(FIXTURES / "sample_photo.png"), width=20, height=20, max_colors=999)
-        assert limited["colors_used"] == baseline["colors_used"]
-        assert limited["codes"] == baseline["codes"]
+        assert limited.colors_used == baseline.colors_used
+        assert limited.codes == baseline.codes
 
     def test_works_with_dither_and_cleanup(self):
         """max_colors composes with dither (and cleanup)."""
@@ -501,7 +496,7 @@ class TestMaxColors:
             dither=True,
             max_colors=5,
         )
-        assert 0 < result["colors_used"] <= 5
+        assert 0 < result.colors_used <= 5
 
     def test_invalid_max_colors_raises(self):
         """max_colors < 1 → ValueError."""
@@ -516,9 +511,9 @@ class TestMaxColors:
         """Two runs with max_colors produce identical output."""
         r1 = convert(str(FIXTURES / "sample_photo.png"), width=20, height=20, max_colors=8)
         r2 = convert(str(FIXTURES / "sample_photo.png"), width=20, height=20, max_colors=8)
-        assert r1["codes"] == r2["codes"]
-        assert r1["indices"] == r2["indices"]
-        assert r1["colors_used"] == r2["colors_used"]
+        assert r1.codes == r2.codes
+        assert r1.indices == r2.indices
+        assert r1.colors_used == r2.colors_used
 
 
 # ---------------------------------------------------------------------------
@@ -552,15 +547,15 @@ class TestSeriesRange:
             str(FIXTURES / "sample_photo.png"), width=20, height=20,
             brand="mard_291", series_range="M",
         )
-        legend_prefixes = {_prefix(e["code"]) for e in result["legend"]}
+        legend_prefixes = {_prefix(e["code"]) for e in result.legend}
         assert legend_prefixes <= {"A", "B", "C", "D", "E", "F", "G", "H", "M"}
         assert not legend_prefixes & {"P", "Q", "R", "T", "Y", "ZG"}
         # Grid codes and legend agree, and are all in-range.
-        used_codes = {c for row in result["codes"] for c in row if c}
-        assert used_codes == {e["code"] for e in result["legend"]}
+        used_codes = {c for row in result.codes for c in row if c}
+        assert used_codes == {e["code"] for e in result.legend}
         assert all(_prefix(c) in {"A", "B", "C", "D", "E", "F", "G", "H", "M"} for c in used_codes)
         # Filtering actually changed the outcome vs. the full palette.
-        assert result["codes"] != baseline["codes"] or result["legend"] != baseline["legend"]
+        assert result.codes != baseline.codes or result.legend != baseline.legend
 
     def test_convert_series_range(self):
         """series_range='A-G' → only A..G codes."""
@@ -571,12 +566,12 @@ class TestSeriesRange:
             str(FIXTURES / "sample_photo.png"), width=20, height=20,
             brand="mard_291", series_range="A-G",
         )
-        legend_prefixes = {_prefix(e["code"]) for e in result["legend"]}
+        legend_prefixes = {_prefix(e["code"]) for e in result.legend}
         assert legend_prefixes <= {"A", "B", "C", "D", "E", "F", "G"}
         assert not legend_prefixes & {"H", "M", "P", "Q", "R", "T", "Y", "ZG"}
-        assert len(result["legend"]) == result["colors_used"]
+        assert len(result.legend) == result.colors_used
         # Strictly fewer colors than the full-palette run (A-G ⊂ full palette).
-        assert result["colors_used"] < baseline["colors_used"]
+        assert result.colors_used < baseline.colors_used
 
     def test_convert_series_flat_noop(self):
         """Flat brand (perler) + series_range → byte-identical to no series."""
@@ -585,10 +580,10 @@ class TestSeriesRange:
             str(FIXTURES / "sample_photo.png"), width=20, height=20,
             brand="perler", series_range="M",
         )
-        assert filtered["codes"] == base["codes"]
-        assert filtered["legend"] == base["legend"]
-        assert filtered["indices"] == base["indices"]
-        assert filtered["colors_used"] == base["colors_used"]
+        assert filtered.codes == base.codes
+        assert filtered.legend == base.legend
+        assert filtered.indices == base.indices
+        assert filtered.colors_used == base.colors_used
 
     def test_convert_series_invalid_raises(self):
         """Unknown series spec → ValueError with Chinese message."""
@@ -604,10 +599,10 @@ class TestSeriesRange:
         explicit = convert(
             str(FIXTURES / "sample_photo.png"), width=20, height=20, series_range=None,
         )
-        assert explicit["codes"] == default["codes"]
-        assert explicit["legend"] == default["legend"]
-        assert explicit["indices"] == default["indices"]
-        assert explicit["colors_used"] == default["colors_used"]
+        assert explicit.codes == default.codes
+        assert explicit.legend == default.legend
+        assert explicit.indices == default.indices
+        assert explicit.colors_used == default.colors_used
 
 
 # ---------------------------------------------------------------------------
@@ -653,9 +648,9 @@ class TestCellMode:
         explicit = convert(
             str(FIXTURES / "sample_photo.png"), width=10, height=10, cell_mode="dominant",
         )
-        assert default["codes"] == explicit["codes"]
-        assert default["indices"] == explicit["indices"]
-        assert default["colors_used"] == explicit["colors_used"]
+        assert default.codes == explicit.codes
+        assert default.indices == explicit.indices
+        assert default.colors_used == explicit.colors_used
 
     def test_load_and_prepare_threads_cell_mode(self):
         """_load_and_prepare accepts cell_mode; dominant path unchanged."""
@@ -726,10 +721,10 @@ class TestSourcePixelCap:
         img_path = tmp_path / "normal.png"
         Image.fromarray(arr, "RGB").save(img_path)
         result = convert(str(img_path), width=20, height=15)
-        assert result["width"] == 20
-        assert result["height"] == 15
-        assert len(result["codes"]) == 15
-        assert result["empty_count"] == 0
+        assert result.width == 20
+        assert result.height == 15
+        assert len(result.codes) == 15
+        assert result.empty_count == 0
 
 
 # ---------------------------------------------------------------------------
@@ -784,8 +779,8 @@ class TestMeanCellMode:
                 mean_edge_range_low=200, mean_edge_range_high=250, stroke_min_length=6,
             ),
         )
-        assert r3["width"] == 20 and r3["height"] == 20
-        assert r3["colors_used"] >= 1
+        assert r3.width == 20 and r3.height == 20
+        assert r3.colors_used >= 1
 
     def test_convert_edge_config_changes_output(self, tmp_path):
         """Raising mean_edge_range_low moves a boundary cell onto the smooth-mean path.
@@ -818,10 +813,10 @@ class TestMeanCellMode:
         """Two mean-mode runs produce byte-identical output."""
         r1 = convert(str(FIXTURES / "sample_photo.png"), width=20, height=20, cell_mode="mean")
         r2 = convert(str(FIXTURES / "sample_photo.png"), width=20, height=20, cell_mode="mean")
-        assert r1["codes"] == r2["codes"]
-        assert r1["indices"] == r2["indices"]
-        assert r1["colors_used"] == r2["colors_used"]
-        assert r1["empty_count"] == r2["empty_count"]
+        assert r1.codes == r2.codes
+        assert r1.indices == r2.indices
+        assert r1.colors_used == r2.colors_used
+        assert r1.empty_count == r2.empty_count
 
     def test_mean_differs_from_dominant_on_gradient(self, tmp_path):
         """On a smooth single-hue gradient, mean stays smooth while dominant snaps.
@@ -1076,8 +1071,8 @@ class TestMeanCellMode:
                 str(FIXTURES / "sample_photo.png"), width=10, height=10,
                 cell_mode="mean", dither=True,
             )
-        assert dithered["codes"] == plain["codes"]
-        assert dithered["indices"] == plain["indices"]
+        assert dithered.codes == plain.codes
+        assert dithered.indices == plain.indices
         assert any("抖动已自动禁用" in r.getMessage() for r in caplog.records), (
             "expected a warning that dither was auto-disabled in mean mode"
         )
@@ -1092,7 +1087,7 @@ class TestMeanCellMode:
             str(FIXTURES / "sample_photo.png"), width=10, height=10,
             cell_mode="dominant", dither=True,
         )
-        assert dithered["indices"] != plain["indices"]
+        assert dithered.indices != plain.indices
 
     def test_mean_merge_preserves_contour(self, tmp_path):
         """Red bg + subtle gradient + thin black contour.
@@ -1119,13 +1114,13 @@ class TestMeanCellMode:
         )
 
         def luminance(code, result):
-            for entry in result["legend"]:
+            for entry in result.legend:
                 if entry["code"] == code:
                     return sum(entry["rgb"]) / 3
             return None
 
-        mean_lums = [luminance(mean_res["codes"][y][7], mean_res) for y in range(3, 6)]
-        dom_lums = [luminance(dom_res["codes"][y][7], dom_res) for y in range(3, 6)]
+        mean_lums = [luminance(mean_res.codes[y][7], mean_res) for y in range(3, 6)]
+        dom_lums = [luminance(dom_res.codes[y][7], dom_res) for y in range(3, 6)]
         assert all(lum is not None and lum < 60 for lum in mean_lums), (
             f"mean mode lost the black contour: {mean_lums}"
         )
@@ -1865,24 +1860,24 @@ class TestDeterminism:
         """CIEDE2000 conversion should be deterministic."""
         r1 = convert(str(FIXTURES / "sample_photo.png"), width=20, height=20, color_space="cie2000")
         r2 = convert(str(FIXTURES / "sample_photo.png"), width=20, height=20, color_space="cie2000")
-        assert r1["codes"] == r2["codes"]
-        assert r1["indices"] == r2["indices"]
-        assert r1["empty_count"] == r2["empty_count"]
-        assert r1["colors_used"] == r2["colors_used"]
+        assert r1.codes == r2.codes
+        assert r1.indices == r2.indices
+        assert r1.empty_count == r2.empty_count
+        assert r1.colors_used == r2.colors_used
 
     def test_deterministic_oklab(self):
         """OKLab conversion should be deterministic."""
         r1 = convert(str(FIXTURES / "sample_photo.png"), width=20, height=20, color_space="oklab")
         r2 = convert(str(FIXTURES / "sample_photo.png"), width=20, height=20, color_space="oklab")
-        assert r1["codes"] == r2["codes"]
-        assert r1["indices"] == r2["indices"]
+        assert r1.codes == r2.codes
+        assert r1.indices == r2.indices
 
     def test_deterministic_dithered(self):
         """Dithered conversion should be deterministic."""
         r1 = convert(str(FIXTURES / "sample_photo.png"), width=10, height=10, dither=True)
         r2 = convert(str(FIXTURES / "sample_photo.png"), width=10, height=10, dither=True)
-        assert r1["codes"] == r2["codes"]
-        assert r1["indices"] == r2["indices"]
+        assert r1.codes == r2.codes
+        assert r1.indices == r2.indices
 
 
 # ---------------------------------------------------------------------------
@@ -1932,9 +1927,9 @@ class TestPerformance:
         )
         elapsed = time.perf_counter() - start
 
-        assert result["width"] == 100
-        assert result["height"] == 100
-        assert result["colors_used"] > 0
+        assert result.width == 100
+        assert result.height == 100
+        assert result.colors_used > 0
 
         if elapsed > 5.0:
             import sys

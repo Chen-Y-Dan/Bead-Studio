@@ -36,6 +36,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from PIL import Image, ImageDraw, ImageFont
 
 from beadstudio.core.estimate import estimate_cost, estimate_time
+from beadstudio.core.models import Pattern
 from beadstudio.core.palette import PERLER_COLORS
 
 _log = logging.getLogger(__name__)
@@ -135,31 +136,30 @@ def _build_palette_lookup(
 
 
 def _resolve_grid(
-    grid: Union[Dict[str, Any], List[List[Optional[str]]]],
+    grid: Union[Pattern, List[List[Optional[str]]]],
 ) -> Tuple[int, int, List[List[Optional[str]]], List[Dict[str, Any]]]:
-    """Accept either a ``convert()`` result (dict or ``Pattern``) or a raw
-    ``codes`` 2D list.
+    """Accept either a ``convert()`` ``Pattern`` or a raw ``codes`` 2D list.
 
     Returns ``(width, height, codes, legend)``, computing ``legend`` from
     scratch if the input was a raw list.
     """
-    if isinstance(grid, dict) or hasattr(grid, "keys"):
-        # dict, or Pattern via its TEMPORARY dict-compat layer.
-        codes: List[List[Optional[str]]] = list(grid["codes"])
-        w: int = grid["width"]
-        h: int = grid["height"]
-        legend: List[Dict[str, Any]] = list(grid.get("legend", []))
+    if isinstance(grid, list):
+        # Raw 2D list of codes
+        codes = list(grid)
+        h = len(codes)
+        w = len(codes[0]) if h > 0 else 0
+        # Verify all rows have the same width
+        for row in codes:
+            if len(row) != w:
+                raise ValueError("All rows in the grid must have the same width.")
+        legend = _compute_legend(codes)
         return w, h, codes, legend
 
-    # Raw 2D list of codes
-    codes = list(grid)
-    h = len(codes)
-    w = len(codes[0]) if h > 0 else 0
-    # Verify all rows have the same width
-    for row in codes:
-        if len(row) != w:
-            raise ValueError("All rows in the grid must have the same width.")
-    legend = _compute_legend(codes)
+    # Pattern (convert() result)
+    codes = list(grid.codes)
+    w = grid.width
+    h = grid.height
+    legend = list(grid.legend)
     return w, h, codes, legend
 
 
@@ -633,8 +633,8 @@ def export_png(
 
     Parameters
     ----------
-    grid : dict | list[list[str|None]]
-        Either the full ``convert()`` result dict or a 2D list of bead
+    grid : Pattern | list[list[str|None]]
+        Either a full ``convert()`` ``Pattern`` or a 2D list of bead
         colour codes (``None`` = empty / no bead).
     palette : dict | None
         Palette dict from ``palette.load_palette(brand)``.  Used for
@@ -706,8 +706,8 @@ def export_png(
             )
 
         # Top info bar with size / bead count / time & cost estimate
-        if hasattr(grid, "keys") and "empty_count" in grid:
-            beads = width * height - int(grid["empty_count"])
+        if isinstance(grid, Pattern):
+            beads = width * height - int(grid.empty_count)
         else:
             beads = sum(1 for row in codes for c in row if c is not None)
         colors_used = len(legend)

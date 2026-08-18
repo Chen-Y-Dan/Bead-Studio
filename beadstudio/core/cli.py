@@ -22,7 +22,7 @@ import typer
 
 from beadstudio.core import palette as palette_mod
 from beadstudio.core.convert import convert as convert_image, parse_cell_mode
-from beadstudio.core.models import EdgeConfig
+from beadstudio.core.models import EdgeConfig, Pattern
 
 # ---------------------------------------------------------------------------
 # Export module: PNG preview / PDF / shopping-list CSV exports
@@ -218,15 +218,15 @@ def _build_edge_config(
     )
 
 
-def _save_result_json(result: dict, out: Path, stem: str) -> None:
+def _save_result_json(result: Pattern, out: Path, stem: str) -> None:
     """Save conversion result as JSON and log the path."""
     json_result = {
-        "width": result["width"],
-        "height": result["height"],
-        "codes": result["codes"],
-        "empty_count": result["empty_count"],
-        "colors_used": result["colors_used"],
-        "legend": result["legend"],
+        "width": result.width,
+        "height": result.height,
+        "codes": result.codes,
+        "empty_count": result.empty_count,
+        "colors_used": result.colors_used,
+        "legend": result.legend,
     }
     json_path = out / f"{stem}_result.json"
     json_path.write_text(
@@ -424,9 +424,9 @@ def _process_single(
 
         # Success summary
         print(f"[OK] 转换完成！输出目录：{out.resolve()}")
-        print(f"  网格尺寸：{result['width']}×{result['height']}")
-        print(f"  使用颜色：{result['colors_used']} 种")
-        print(f"  空位数量：{result['empty_count']}")
+        print(f"  网格尺寸：{result.width}×{result.height}")
+        print(f"  使用颜色：{result.colors_used} 种")
+        print(f"  空位数量：{result.empty_count}")
 
     except FileNotFoundError:
         if debug:

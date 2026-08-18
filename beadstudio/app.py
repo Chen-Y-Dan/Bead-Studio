@@ -334,11 +334,11 @@ class MainWindow(QMainWindow):
         self._last_result = result
         # W5: convert() returns a typed Pattern whose grid_rgb is authoritative
         # — no more build_grid_rgb recompute in this path.
-        self.preview.set_pattern(result.grid_rgb, result["codes"], result["legend"])
+        self.preview.set_pattern(result.grid_rgb, result.codes, result.legend)
 
         parts = [
             tr("status_done", self._lang).format(
-                n=result["colors_used"], w=result["width"], h=result["height"]
+                n=result.colors_used, w=result.width, h=result.height
             )
         ]
         if bg_remove_skipped:

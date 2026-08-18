@@ -121,7 +121,7 @@ def test_convert_with_bg_remove_flag_without_rembg(tmp_path, qapp):
     window._convert()  # must not raise
 
     assert window._last_result is not None
-    assert window._last_result["width"] == 16
+    assert window._last_result.width == 16
     assert not window.preview.image().isNull()
     assert "转换完成" in window.status_label.text()
     assert "背景移除已跳过" in window.status_label.text()

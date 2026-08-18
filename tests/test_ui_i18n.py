@@ -213,9 +213,9 @@ def test_convert_flow_mard_mean(qapp, tmp_path):
 
     result = window._last_result
     assert result is not None
-    assert result["width"] == 16
-    assert result["height"] == 16  # square source → auto height
-    assert result["colors_used"] >= 1
+    assert result.width == 16
+    assert result.height == 16  # square source → auto height
+    assert result.colors_used >= 1
 
     # preview got a non-empty pattern
     assert window.preview.grid_rgb is not None
@@ -251,7 +251,7 @@ def test_param_change_does_not_auto_convert(qapp, tmp_path):
     window.settings.generate_preview_button.click()
     qapp.processEvents()
     assert window._last_result is not None
-    assert window._last_result["width"] == 16
+    assert window._last_result.width == 16
     assert window.preview.grid_rgb is not None
     assert not window.preview.image().isNull()
     assert "转换完成" in window.status_label.text()
@@ -259,5 +259,5 @@ def test_param_change_does_not_auto_convert(qapp, tmp_path):
     # A later param change still must not re-convert on its own.
     window.settings.width_spin.setValue(24)
     qapp.processEvents()
-    assert window._last_result["width"] == 16  # unchanged: still the click result
+    assert window._last_result.width == 16  # unchanged: still the click result
     window.close()

@@ -1,4 +1,4 @@
-"""convert() returns a typed Pattern — dict-compat shim + new-field invariants.
+"""convert() returns a typed Pattern — typed-field invariants.
 
 The byte-identical golden PNG test (``test_golden_photo_png_byte_identical``
 in test_convert.py) already proves the pipeline output is unchanged; these
@@ -22,35 +22,25 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 GRID_W = 12
 GRID_H = 12
 
-PATTERN_KEYS = [
-    "codes", "indices", "width", "height", "empty_count",
-    "colors_used", "legend", "grid_rgb", "active_mask",
-]
-
 
 def _convert(**kw) -> Pattern:
     return convert(str(FIXTURES / "sample_photo.png"), width=GRID_W, height=GRID_H, **kw)
 
 
 def test_convert_returns_pattern():
-    """convert() returns a typed Pattern; the dict-compat shim still works."""
+    """convert() returns a typed Pattern with all 9 fields."""
     result = _convert()
     assert isinstance(result, Pattern)
-    # __getitem__ shim mirrors the attributes exactly.
-    assert result["codes"] == result.codes
-    assert result["width"] == result.width == GRID_W
-    assert result["height"] == result.height == GRID_H
-    # keys() covers all 9 Pattern fields.
-    assert list(result.keys()) == PATTERN_KEYS
-    # dict(result) and {**result} work through keys()+__getitem__.
-    assert dict(result)["legend"] == result.legend
-    assert {**result}["colors_used"] == result.colors_used
-    # get() with and without fallback.
-    assert result.get("empty_count") == result.empty_count
-    assert result.get("no_such_key", "fallback") == "fallback"
-    # `in result` membership.
-    assert "codes" in result
-    assert "no_such_key" not in result
+    assert result.width == GRID_W
+    assert result.height == GRID_H
+    assert len(result.codes) == GRID_H
+    assert all(len(row) == GRID_W for row in result.codes)
+    assert len(result.indices) == GRID_H
+    assert all(len(row) == GRID_W for row in result.indices)
+    assert result.active_mask.shape == (GRID_H, GRID_W)
+    assert 0 <= result.empty_count <= GRID_W * GRID_H
+    assert result.colors_used == len(result.legend)
+    assert result.grid_rgb.shape == (GRID_H, GRID_W, 3)
 
 
 def test_pattern_grid_rgb_matches_codes():
