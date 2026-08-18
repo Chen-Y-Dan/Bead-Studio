@@ -22,6 +22,7 @@ import typer
 
 from beadstudio.core import palette as palette_mod
 from beadstudio.core.convert import convert as convert_image, parse_cell_mode
+from beadstudio.core.models import EdgeConfig
 
 # ---------------------------------------------------------------------------
 # Export module: PNG preview / PDF / shopping-list CSV exports
@@ -161,6 +162,60 @@ def _validate_output_dir(out: str) -> Path:
         print(f"输出路径不能包含 .. 越界：{out}", file=sys.stderr)
         sys.exit(2)
     return p
+
+
+# Defaults mirror EdgeConfig field defaults (models.py).
+_EDGE_DEFAULTS = {
+    "low": 115,
+    "high": 180,
+    "deltae": 15.0,
+    "stroke_frac": 0.12,
+    "stroke_len": 5,
+    "stroke_deltae": 35.0,
+}
+
+
+def _build_edge_config(
+    edge_low: Optional[int],
+    edge_high: Optional[int],
+    edge_deltae: Optional[float],
+    stroke_frac: Optional[float],
+    stroke_len: Optional[int],
+    stroke_deltae: Optional[float],
+) -> Optional[EdgeConfig]:
+    """Build an EdgeConfig when any advanced flag is set, else ``None``.
+
+    ``None`` preserves the legacy (no-edge-flags) behavior byte-for-byte —
+    the engine falls back to ``EdgeConfig()``. When any flag is set, unset
+    fields fall back to the EdgeConfig defaults, and the LOW < HIGH pair is
+    re-clamped (``high = low + 1``) so the core's ``__post_init__``
+    validation always passes, mirroring ``settings_panel._edge_config``.
+    """
+    if all(
+        v is None
+        for v in (edge_low, edge_high, edge_deltae, stroke_frac, stroke_len, stroke_deltae)
+    ):
+        return None
+    low = edge_low if edge_low is not None else _EDGE_DEFAULTS["low"]
+    high = edge_high if edge_high is not None else _EDGE_DEFAULTS["high"]
+    if low >= high:
+        high = low + 1
+    return EdgeConfig(
+        mean_edge_range_low=low,
+        mean_edge_range_high=high,
+        mean_edge_deltae_threshold=(
+            edge_deltae if edge_deltae is not None else _EDGE_DEFAULTS["deltae"]
+        ),
+        stroke_min_fraction=(
+            stroke_frac if stroke_frac is not None else _EDGE_DEFAULTS["stroke_frac"]
+        ),
+        stroke_min_length=(
+            stroke_len if stroke_len is not None else _EDGE_DEFAULTS["stroke_len"]
+        ),
+        stroke_min_deltae=(
+            stroke_deltae if stroke_deltae is not None else _EDGE_DEFAULTS["stroke_deltae"]
+        ),
+    )
 
 
 def _save_result_json(result: dict, out: Path, stem: str) -> None:
@@ -310,6 +365,7 @@ def _process_single(
     cell_color: str = "dominant",
     max_grid_dimension: int = 1800,
     series: Optional[str] = None,
+    edge_config: Optional[EdgeConfig] = None,
 ) -> None:
     """Process a single image through the convert pipeline."""
     _validate_brand(brand)
@@ -346,6 +402,7 @@ def _process_single(
             max_colors=max_colors,
             cell_mode=cell_mode,
             series_range=series,
+            edge_config=edge_config,
         )
 
         out.mkdir(parents=True, exist_ok=True)
@@ -430,6 +487,7 @@ def _run_batch(
     cell_color: str = "dominant",
     max_grid_dimension: int = 1800,
     series: Optional[str] = None,
+    edge_config: Optional[EdgeConfig] = None,
 ) -> None:
     """Process all supported images in a directory (--dir batch mode)."""
     if not image_path.is_dir():
@@ -473,6 +531,7 @@ def _run_batch(
             cell_color=cell_color,
             max_grid_dimension=max_grid_dimension,
             series=series,
+            edge_config=edge_config,
         )
     print(f"\n[OK] 批量处理完成！共 {len(images)} 张图片")
 
@@ -579,6 +638,36 @@ def convert(
         "--series",
         help="色号系列范围（仅 MARD/COCO 等字母系列品牌，如 \"M\" 表示 A~M、\"A-G\" 表示 A 到 G）",
     ),
+    edge_low: Optional[int] = typer.Option(
+        None,
+        "--edge-low",
+        help="Edge range low (base, scales with cell area). Default 115.",
+    ),
+    edge_high: Optional[int] = typer.Option(
+        None,
+        "--edge-high",
+        help="Edge range high (base). Default 180.",
+    ),
+    edge_deltae: Optional[float] = typer.Option(
+        None,
+        "--edge-deltae",
+        help="Edge ΔE00 threshold. Default 15.0.",
+    ),
+    stroke_frac: Optional[float] = typer.Option(
+        None,
+        "--stroke-frac",
+        help="Stroke min fraction (0-1). Default 0.12.",
+    ),
+    stroke_len: Optional[int] = typer.Option(
+        None,
+        "--stroke-len",
+        help="Stroke min length. Default 5.",
+    ),
+    stroke_deltae: Optional[float] = typer.Option(
+        None,
+        "--stroke-deltae",
+        help="Stroke min ΔE00. Default 35.0.",
+    ),
 ) -> None:
     """将图片转换为拼豆图案。
 
@@ -599,6 +688,11 @@ def convert(
     _validate_match(match)
     _validate_cell_mode(cell_color)
     _validate_rate(rate, shop_rate)
+
+    # EdgeConfig: None when no advanced flag is set (legacy behavior).
+    edge_config = _build_edge_config(
+        edge_low, edge_high, edge_deltae, stroke_frac, stroke_len, stroke_deltae
+    )
 
     image_path = Path(image)
     output_dir = _validate_output_dir(out)
@@ -624,6 +718,7 @@ def convert(
             cell_color=cell_color,
             max_grid_dimension=max_grid_dimension,
             series=series,
+            edge_config=edge_config,
         )
         return
 
@@ -665,6 +760,7 @@ def convert(
         cell_color=cell_color,
         max_grid_dimension=max_grid_dimension,
         series=series,
+        edge_config=edge_config,
     )
 
 
