@@ -233,7 +233,7 @@ def filter_by_series(brand: str, series_spec: str) -> dict[str, Any]:
     ------
     ValueError
         If the spec is not alphabetic, or a single-prefix spec does not
-        match any series of the brand (message in Chinese, listing valid
+        match any series of the brand (message in English, listing valid
         series).
     """
     palette = load_palette(brand)
@@ -255,13 +255,13 @@ def filter_by_series(brand: str, series_spec: str) -> dict[str, Any]:
     else:
         if not spec.isalpha():
             raise ValueError(
-                f"无效的系列参数：'{series_spec}'，应为字母系列或范围"
-                "（如 'M'、'A-G'、'A..G'、'全部'）"
+                f"Invalid series spec: '{series_spec}'. Expected a letter series "
+                "or range (e.g. 'M', 'A-G', 'A..G', 'all')."
             )
         if spec not in series:
             raise ValueError(
-                f"品牌 '{brand}' 不存在系列 '{series_spec}'，"
-                f"可用系列：{'、'.join(series)}"
+                f"Brand '{brand}' has no series '{series_spec}'. "
+                f"Available: {', '.join(series)}."
             )
         keep = [p for p in series if p <= spec]
 

@@ -242,8 +242,8 @@ def test_filter_by_series_flat_unchanged():
 
 
 def test_filter_by_series_invalid():
-    """Unknown prefix or non-letter spec raises a Chinese ValueError."""
-    with pytest.raises(ValueError, match="系列"):
+    """Unknown prefix or non-letter spec raises a ValueError."""
+    with pytest.raises(ValueError, match="series"):
         palette.filter_by_series("mard", "ZZ")
-    with pytest.raises(ValueError, match="系列"):
+    with pytest.raises(ValueError, match="series"):
         palette.filter_by_series("mard", "1")

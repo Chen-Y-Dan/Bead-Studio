@@ -726,7 +726,7 @@ def convert(
     if not image_path.exists():
         if debug:
             try:
-                raise FileNotFoundError(f"文件不存在：{image_path}")
+                raise FileNotFoundError(f"File not found: {image_path}")
             except FileNotFoundError:
                 traceback.print_exc()
         print(f"文件不存在：{image_path}", file=sys.stderr)
@@ -735,7 +735,7 @@ def convert(
     if not image_path.is_file():
         if debug:
             try:
-                raise IsADirectoryError(f"不是有效的文件：{image_path}")
+                raise IsADirectoryError(f"Not a valid file: {image_path}")
             except IsADirectoryError:
                 traceback.print_exc()
         print(f"不是有效的文件：{image_path}", file=sys.stderr)

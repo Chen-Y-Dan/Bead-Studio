@@ -372,7 +372,7 @@ class TestConvertPipeline:
 
     def test_unknown_brand_raises(self):
         """Completely unknown brand must raise ValueError."""
-        with pytest.raises(ValueError, match="不支持的品牌"):
+        with pytest.raises(ValueError, match="Unsupported brand"):
             convert(
                 str(FIXTURES / "sample_photo.png"),
                 width=10, height=10,
@@ -586,8 +586,8 @@ class TestSeriesRange:
         assert filtered.colors_used == base.colors_used
 
     def test_convert_series_invalid_raises(self):
-        """Unknown series spec → ValueError with Chinese message."""
-        with pytest.raises(ValueError, match="系列"):
+        """Unknown series spec → ValueError with English message."""
+        with pytest.raises(ValueError, match="has no series"):
             convert(
                 str(FIXTURES / "sample_photo.png"), width=20, height=20,
                 brand="mard_291", series_range="ZZ",
@@ -705,13 +705,13 @@ class TestSourcePixelCap:
         assert Image.MAX_IMAGE_PIXELS == _MAX_SOURCE_PIXELS
 
     def test_source_pixel_cap_rejects_oversized(self, tmp_path):
-        """6000×5000 = 30MP (> 24MP cap) → Chinese ValueError, before decode."""
+        """6000×5000 = 30MP (> 24MP cap) → ValueError, before decode."""
         img_path = tmp_path / "oversized.png"
         img_path.write_bytes(_header_only_png(6000, 5000))
         # PIL's own bomb guard (Image.MAX_IMAGE_PIXELS = cap) warns at open;
-        # our explicit header check then raises the Chinese ValueError.
+        # our explicit header check then raises the ValueError.
         with pytest.warns(Image.DecompressionBombWarning):
-            with pytest.raises(ValueError, match="图片分辨率过大"):
+            with pytest.raises(ValueError, match="Image resolution too large"):
                 _load_and_prepare(img_path, 10, 10)
 
     def test_source_pixel_cap_allows_normal(self, tmp_path):

@@ -187,31 +187,31 @@ class TestCostCalculation:
 # ---------------------------------------------------------------------------
 
 class TestValidation:
-    """Reject invalid inputs with Chinese error messages."""
+    """Reject invalid inputs with English error messages."""
 
     def test_rate_zero_raises(self):
         """rate <= 0 → ValueError."""
-        with pytest.raises(ValueError, match="rate.*大于"):
+        with pytest.raises(ValueError, match="rate must be greater than 0"):
             estimate_time(100, rate=0)
 
     def test_rate_negative_raises(self):
         """Negative rate → ValueError."""
-        with pytest.raises(ValueError, match="rate.*大于"):
+        with pytest.raises(ValueError, match="rate must be greater than 0"):
             estimate_time(100, rate=-5)
 
     def test_shop_rate_zero_raises(self):
         """shop_rate <= 0 in estimate_cost → ValueError."""
-        with pytest.raises(ValueError, match="shop_rate.*大于"):
+        with pytest.raises(ValueError, match="shop_rate must be greater than 0"):
             estimate_cost(60.0, 0.0)
 
     def test_shop_rate_negative_raises(self):
         """Negative shop_rate in estimate_cost → ValueError."""
-        with pytest.raises(ValueError, match="shop_rate.*大于"):
+        with pytest.raises(ValueError, match="shop_rate must be greater than 0"):
             estimate_cost(60.0, -10.0)
 
     def test_estimate_time_shop_rate_zero_raises(self):
         """shop_rate <= 0 in estimate_time → ValueError."""
-        with pytest.raises(ValueError, match="shop_rate.*大于"):
+        with pytest.raises(ValueError, match="shop_rate must be greater than 0"):
             estimate_time(100, rate=25, shop_rate=0)
 
 

@@ -94,7 +94,7 @@ def _get_palette_rgb(brand: str) -> np.ndarray:
     """Load palette RGB array (float64 N×3) for a brand via palette.load_palette.
 
     Falls back to hardcoded PERLER_RGB only when the perler JSON is missing.
-    Unknown brands raise ValueError with Chinese message listing all brands.
+    Unknown brands raise ValueError with an English message listing all brands.
     """
     if brand in _CACHED_PALETTES:
         return _CACHED_PALETTES[brand][0].copy()
@@ -107,12 +107,12 @@ def _get_palette_rgb(brand: str) -> np.ndarray:
             _CACHED_PALETTES["perler"] = (PERLER_RGB.copy(), list(PERLER_CODES))
             return PERLER_RGB.copy()
         from beadstudio.core.palette import list_brands
-        available = "、".join(list_brands())
-        raise ValueError(f"不支持的品牌: {brand!r}。可用品牌: {available}")
+        available = ", ".join(list_brands())
+        raise ValueError(f"Unsupported brand: {brand!r}. Available: {available}.")
 
     colors = data["colors"]
     if not colors:
-        raise ValueError(f"品牌 {brand!r} 的色盘为空")
+        raise ValueError(f"Palette for brand {brand!r} is empty.")
 
     rgb_list: List[List[int]] = []
     codes: List[str] = []
@@ -121,8 +121,8 @@ def _get_palette_rgb(brand: str) -> np.ndarray:
         for val in (r, g, b):
             if not isinstance(val, int) or val < 0 or val > 255:
                 raise ValueError(
-                    f"品牌 {brand!r} 色号 {c['code']!r} 的 RGB 值无效: "
-                    f"({r}, {g}, {b})"
+                    f"Invalid RGB for brand {brand!r} code {c['code']!r}: "
+                    f"({r}, {g}, {b})."
                 )
         rgb_list.append([r, g, b])
         codes.append(c["code"])
@@ -150,7 +150,7 @@ def _palette_arrays_from_colors(
     matching array and the code grid consistently.
     """
     if not colors:
-        raise ValueError(f"品牌 {brand!r} 的色盘为空")
+        raise ValueError(f"Palette for brand {brand!r} is empty.")
 
     rgb_list: List[List[int]] = []
     codes: List[str] = []
@@ -159,8 +159,8 @@ def _palette_arrays_from_colors(
         for val in (r, g, b):
             if not isinstance(val, int) or val < 0 or val > 255:
                 raise ValueError(
-                    f"品牌 {brand!r} 色号 {c['code']!r} 的 RGB 值无效: "
-                    f"({r}, {g}, {b})"
+                    f"Invalid RGB for brand {brand!r} code {c['code']!r}: "
+                    f"({r}, {g}, {b})."
                 )
         rgb_list.append([r, g, b])
         codes.append(c["code"])
@@ -445,7 +445,7 @@ def _load_and_prepare(
     src_img = Image.open(image_path)
     src_w, src_h = src_img.size
     if src_w * src_h > _MAX_SOURCE_PIXELS:
-        raise ValueError("图片分辨率过大，请缩小图片（最大 2400 万像素）")
+        raise ValueError("Image resolution too large; please downscale (max 24 megapixels).")
     img = src_img.convert("RGBA")
     # Resize to target grid
     img = img.resize((width, height), Image.Resampling.LANCZOS)
@@ -742,7 +742,7 @@ def convert(
         Only in-range palette colors can be matched. Flat brands (perler, hama,
         ...) have no series concept: the spec is a no-op (full palette) and
         ``max_colors`` still applies as usual. Invalid specs raise a ``ValueError``
-        with a Chinese message. ``None`` (default) keeps the full palette.
+        with an English message. ``None`` (default) keeps the full palette.
     :param edge_config: User-tunable algorithm parameters (edge-aware mean
         sampling thresholds + stroke gates) for ``cell_mode="mean"``;
         ``None`` (default) uses ``EdgeConfig()`` defaults.
@@ -767,7 +767,7 @@ def convert(
         # B2: keep the raised message path-free (the CLI echoes exception text
         # to stderr); the offending path goes to the logs instead.
         _log.error("图片不存在: %s", image_path)
-        raise FileNotFoundError("找不到图片文件")
+        raise FileNotFoundError("Image file not found.")
 
     # Derive the missing dimension from the source image's aspect ratio
     # (header-only read — PIL does not decode pixel data for `.size`).

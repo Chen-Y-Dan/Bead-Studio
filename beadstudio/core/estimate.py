@@ -101,9 +101,9 @@ def estimate_time(
         If *rate* ≤ 0 or *shop_rate* ≤ 0.
     """
     if rate <= 0:
-        raise ValueError("rate 必须大于 0")
+        raise ValueError("rate must be greater than 0")
     if shop_rate <= 0:
-        raise ValueError("shop_rate 必须大于 0")
+        raise ValueError("shop_rate must be greater than 0")
 
     # --- colour difficulty factor (tunable, experience-based estimate) ---
     if colors <= 8:
@@ -176,6 +176,6 @@ def estimate_cost(minutes: float, shop_rate: float = 30) -> float:
         If *shop_rate* ≤ 0.
     """
     if shop_rate <= 0:
-        raise ValueError("shop_rate 必须大于 0")
+        raise ValueError("shop_rate must be greater than 0")
     half_hours = math.ceil(minutes / 30.0)
     return half_hours * 0.5 * shop_rate
