@@ -20,7 +20,6 @@ from beadstudio.core.export import (
     _LEGEND_ROW_H,
     _LINE_COLOR,
     _MAJOR_LINE_COLOR,
-    _PERLER_RGB_MAP,
     _build_info_bar_text,
     _cell_label,
     _compute_legend,
@@ -29,6 +28,7 @@ from beadstudio.core.export import (
     shopping_list_csv,
     shopping_list_png,
 )
+from beadstudio.core.palette import PERLER_COLORS as PALETTE_PERLER
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
@@ -639,16 +639,14 @@ class TestIntegration:
 # ---------------------------------------------------------------------------
 
 class TestPerlerRgbMap:
-    """Verify the built-in perler RGB map matches convert.PERLER_COLORS."""
+    """Verify the single-source perler palette (palette.py, from perler.json)
+    agrees with the pipeline-derived export path."""
 
-    def test_all_convert_colors_in_map(self):
-        """Every colour in convert.PERLER_COLORS must be in _PERLER_RGB_MAP."""
-        for code, rgb in PERLER_COLORS:
-            assert code in _PERLER_RGB_MAP, f"{code} missing from export._PERLER_RGB_MAP"
-            assert _PERLER_RGB_MAP[code] == rgb, (
-                f"{code}: export map {_PERLER_RGB_MAP[code]} != convert {rgb}"
-            )
+    def test_palette_source_matches_pipeline(self):
+        """dict(palette.PERLER_COLORS) must equal the pipeline-derived map."""
+        assert dict(PALETTE_PERLER) == dict(PERLER_COLORS)
 
-    def test_map_count_matches(self):
-        """Map should have same number of entries as PERLER_COLORS."""
-        assert len(_PERLER_RGB_MAP) == len(PERLER_COLORS)
+    def test_map_count(self):
+        """Single source has exactly 103 entries."""
+        assert len(PALETTE_PERLER) == 103
+        assert len(PERLER_COLORS) == 103

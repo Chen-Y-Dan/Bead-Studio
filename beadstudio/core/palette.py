@@ -31,9 +31,27 @@ import json
 import re
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import Any, List, Tuple
 
 _PALETTES_DIR = Path(__file__).resolve().parent / "data" / "palettes"
+
+# ---------------------------------------------------------------------------
+# Perler bead palette (103 colors) — single source of truth.
+# Loaded ONCE from data/palettes/perler.json at import time; the JSON order
+# is the canonical order and is preserved exactly. pipeline.py and export.py
+# derive their perler data from this constant.
+# ---------------------------------------------------------------------------
+
+
+def _load_perler_colors() -> List[Tuple[str, Tuple[int, int, int]]]:
+    """Load ``(code, (r, g, b))`` tuples from perler.json, in JSON order."""
+    path = _PALETTES_DIR / "perler.json"
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    return [(c["code"], tuple(c["rgb"])) for c in data["colors"]]
+
+
+PERLER_COLORS: List[Tuple[str, Tuple[int, int, int]]] = _load_perler_colors()
 
 
 def _palette_path(brand: str) -> Path:
