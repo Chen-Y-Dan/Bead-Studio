@@ -188,8 +188,10 @@ def _build_edge_config(
     ``None`` preserves the legacy (no-edge-flags) behavior byte-for-byte —
     the engine falls back to ``EdgeConfig()``. When any flag is set, unset
     fields fall back to the EdgeConfig defaults, and the LOW < HIGH pair is
-    re-clamped (``high = low + 1``) so the core's ``__post_init__``
-    validation always passes, mirroring ``settings_panel._edge_config``.
+    re-clamped (``high = min(low + 1, 255)`` — capped at the core's (0, 255]
+    upper bound; if low is already 255, low steps back to 254 so
+    low < high always holds) so the core's ``__post_init__`` validation
+    always passes, mirroring ``settings_panel._edge_config``.
     """
     if all(
         v is None
@@ -199,7 +201,14 @@ def _build_edge_config(
     low = edge_low if edge_low is not None else _EDGE_DEFAULTS["low"]
     high = edge_high if edge_high is not None else _EDGE_DEFAULTS["high"]
     if low >= high:
-        high = low + 1
+        # Cap at 255 so the clamp keeps mean_edge_range_high within EdgeConfig's
+        # (0, 255] bound (--edge-low 255 would otherwise push high to 256),
+        # mirroring settings_panel._edge_config. For low == 255 no valid high
+        # exists above it — step low back so low < high still holds (out-of-range
+        # lows like 300 are left alone so __post_init__ still rejects them).
+        high = min(low + 1, 255)
+        if low == 255:
+            low = high - 1
     return EdgeConfig(
         mean_edge_range_low=low,
         mean_edge_range_high=high,

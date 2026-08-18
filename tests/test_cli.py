@@ -122,3 +122,29 @@ def test_convert_low_high_clamp(tmp_path):
     )
     assert result.exit_code == 0, result.output
     assert _result_json(out).exists()
+
+
+def test_convert_edge_low_255_clamps(tmp_path):
+    """--edge-low 255 (valid, at the upper bound) clamps instead of raising."""
+    # Unit level: low=255 with default high -> high capped at 255, low stepped
+    # back to 254 so the core's low < high <= 255 invariant holds.
+    from beadstudio.core.cli import _build_edge_config
+
+    ec = _build_edge_config(255, None, None, None, None, None)
+    assert ec.mean_edge_range_high == 255
+    assert ec.mean_edge_range_low == 254
+    assert ec.mean_edge_range_low < ec.mean_edge_range_high
+
+    # CLI level: --edge-low 255 (default high 180) -> exit 0, no ValueError.
+    img = _make_image(tmp_path / "testimg.png")
+    out = tmp_path / "out"
+    result = runner.invoke(app, _convert_args(img, out, "--edge-low", "255"))
+    assert result.exit_code == 0, result.output
+    assert _result_json(out).exists()
+    # low == high == 255 both given -> still clamped within bounds, exit 0.
+    out2 = tmp_path / "out2"
+    result2 = runner.invoke(
+        app, _convert_args(img, out2, "--edge-low", "255", "--edge-high", "255")
+    )
+    assert result2.exit_code == 0, result2.output
+    assert _result_json(out2).exists()
