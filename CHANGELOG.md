@@ -4,6 +4,17 @@ All notable changes to BeadStudio (豆趣工坊) are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.1] - 2026-08-18
+
+### Fixed
+- Perler 103-color data deduplicated to single source via palette.py/perler.json (f89ddcd)
+- Pattern dict-compat shim removed — export accepts Pattern, attr access unified, compat tests removed (c57de63)
+- 15 core exception messages converted to English (W1 consumer-agnostic consistency) (0236829)
+- Documentation test-count drift corrected (README/AGENTS/CHANGELOG) (c1c08ba)
+
+### Added
+- CLI convert command exposes EdgeConfig via 6 flags (--edge-low/high/deltae/--stroke-frac/len/deltae), matching GUI sliders (ff20a93)
+
 ## [1.1.0] - 2026-08-16
 
 ### Added
