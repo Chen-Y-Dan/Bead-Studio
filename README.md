@@ -234,8 +234,8 @@ dist\BeadStudio.exe --list-brands   # expect: list-brands=21
 conda run -n beadGUI python -m pytest tests/ -q
 ```
 
-265 个测试全部通过（界面 + 引擎核心算法 + 导出 + 国际化 + 拖拽粘贴 + 主题）。
-265 tests pass (UI + core algorithms + exports + i18n + drag/paste + theme).
+302 个测试全部通过（界面 + 引擎核心算法 + 导出 + 国际化 + 拖拽粘贴 + 主题）。
+302 tests pass (1 skipped) (UI + core algorithms + exports + i18n + drag/paste + theme).
 
 ---
 
@@ -300,7 +300,7 @@ would not exist without them:
   │   ├── estimate.py   # 耗时/费用估算
   │   └── export.py     # PNG / CSV / PDF 导出
   ├── assets/           # app_icon.ico / app_icon_512.png
-  ├── tests/            # pytest（265 个）
+  ├── tests/            # pytest（302 个）
   └── scripts/build_exe.ps1  # PyInstaller 构建脚本
   ```
 

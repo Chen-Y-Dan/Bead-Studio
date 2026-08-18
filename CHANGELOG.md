@@ -14,7 +14,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Advanced-parameters collapsible area with **6 EdgeConfig sliders** (smoothness / edge / thin-line / length / high-boundary / color-diff), reset-to-defaults, LOW < HIGH linkage, and preview rendering via `Pattern.grid_rgb` (f4ae524)
 
 ### Changed
-- Refactored the engine core from upstream — `models.py` + `conversion/` subpackage, `Pattern` return type, `EdgeConfig` parameters, and regression fixtures; 292 tests green (a831109)
+- Refactored the engine core from upstream — `models.py` + `conversion/` subpackage, `Pattern` return type, `EdgeConfig` parameters, and regression fixtures; 302 tests green (1 skipped) (a831109)
 
 ### Fixed
 - GUI launch crash `DLL load failed while importing pyexpat` — added conda DLLs (libexpat / libffi-7,8 / libcrypto / liblzma / zlib) to `--add-binary` in the build (88d889a)

@@ -8,26 +8,38 @@ PySide6 desktop app for bead (拼豆) patterns. GPL-3.0. W5: docs + git init.
 beadstudio/
 ├── app.py            # QApplication + main window (GUI flow)
 ├── ui/               # i18n.py (tr()), preview.py, settings_panel.py
+│   └── theme.py      # dark theme tokens + QSS + apply_theme() (DESIGN.md)
 ├── core/             # ENGINE COPY of bead-pattern-cli (see copy rule)
 │   ├── cli.py        # CLI entry: python -m beadstudio.core.cli
-│   ├── convert.py    # image → bead grid pipeline (CIEDE2000/OKLab, dither)
+│   ├── models.py     # typed models: Pattern, EdgeConfig, BeadColor, Palette
+│   ├── convert.py    # re-export shell (logic in conversion/)
+│   ├── conversion/   # conversion pipeline subpackage (W3 split)
+│   │   ├── pipeline.py  # image → bead grid pipeline (CIEDE2000/OKLab, dither)
+│   │   ├── color.py     # sRGB/XYZ/Lab/OKLab conversions
+│   │   ├── matching.py  # nearest-neighbour palette matching
+│   │   ├── dither.py    # Floyd-Steinberg error diffusion
+│   │   ├── edge.py      # dominant color / clustering / edge detection
+│   │   ├── stroke.py    # stroke tracking + line-color voting
+│   │   └── cleanup.py   # BFS region cleanup + color-count limiting
 │   ├── palette.py    # palette loading (core/data/palettes/*.json, 21 brands)
 │   ├── estimate.py   # time/cost estimation
-│   └── export.py     # PNG / CSV / PDF export
+│   ├── export.py     # PNG / CSV / PDF export
+│   └── data/         # bundled data (palettes)
+│       └── palettes/ # 21 brand palette JSONs (perler/hama/artkal/...)
 ├── assets/           # app_icon.ico, app_icon_512.png
-├── tests/            # pytest, 51 tests (smoke, bg preview, exports, i18n)
+├── tests/            # pytest, 302 tests (smoke, bg preview, exports, i18n)
 ├── scripts/build_exe.ps1  # PyInstaller onefile build → dist\BeadStudio.exe
 ├── LICENSE           # GPL-3.0
 ├── NOTICE            # third-party attribution (engine MIT, palettes, Qt)
 ├── README.md         # bilingual (zh/en), release-grade
-└── pyproject.toml    # name=beadstudio, version=1.0.0, setuptools
+└── pyproject.toml    # name=beadstudio, version=1.1.1, setuptools
 ```
 
 ## Commands (conda env `beadGUI`)
 
 ```powershell
 # tests
-conda run -n beadGUI python -m pytest tests/ -q          # 51 passed
+conda run -n beadGUI python -m pytest tests/ -q          # 302 passed, 1 skipped
 # or directly (conda run can deadlock on this machine with big output):
 # use the env's python directly, e.g.:
 python -m pytest tests/ -q
